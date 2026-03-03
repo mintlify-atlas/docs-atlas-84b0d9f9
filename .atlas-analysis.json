@@ -1,0 +1,121 @@
+{
+  "projectType": "frontend",
+  "projectName": "3D Interactive Portfolio",
+  "projectDescription": "A visually stunning personal portfolio website showcasing skills, projects, and personality with 3D animations, smooth interactions, and a cosmic theme built with Next.js.",
+  "theme": "willow",
+  "primaryColor": "#ff9966",
+  "lightColor": null,
+  "darkColor": null,
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "installation"
+            ]
+          },
+          {
+            "group": "Core Features",
+            "pages": [
+              "features/3d-animations",
+              "features/smooth-animations",
+              "features/particles-background",
+              "features/theme-system",
+              "features/realtime-features"
+            ]
+          },
+          {
+            "group": "Components",
+            "pages": [
+              "components/overview",
+              "components/ui-components",
+              "components/sections",
+              "components/animations"
+            ]
+          },
+          {
+            "group": "Customization",
+            "pages": [
+              "customization/configuration",
+              "customization/theming",
+              "customization/content",
+              "customization/styling"
+            ]
+          },
+          {
+            "group": "Deployment",
+            "pages": [
+              "deployment/vercel",
+              "deployment/environment-variables",
+              "deployment/email-setup"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Configuration",
+            "pages": [
+              "api/config",
+              "api/constants"
+            ]
+          },
+          {
+            "group": "Components",
+            "pages": [
+              "api/components/header",
+              "api/components/footer",
+              "api/components/particles",
+              "api/components/preloader"
+            ]
+          },
+          {
+            "group": "Hooks & Utilities",
+            "pages": [
+              "api/hooks",
+              "api/utils"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Interactive 3D keyboard with Spline showcasing skills",
+    "Smooth animations powered by GSAP and Framer Motion",
+    "Cosmic particle background with space theme",
+    "Fully responsive design for all devices",
+    "Dark/light theme system with next-themes",
+    "Real-time features with Socket.io (remote cursors, online users)",
+    "Contact form with Resend email integration",
+    "SEO optimized with metadata and Open Graph",
+    "Custom UI components with Radix UI and Tailwind CSS",
+    "Easter eggs and interactive elements"
+  ],
+  "publicApiSurface": [
+    "ContactForm component",
+    "Particles component",
+    "Header component",
+    "Footer component",
+    "Preloader component",
+    "SmoothScroll component",
+    "ThemeProvider component",
+    "ElasticCursor component",
+    "AnimatedBackground component",
+    "RevealAnimations component",
+    "Hero section",
+    "Skills section",
+    "Projects section",
+    "Contact section",
+    "config object (site configuration)",
+    "constants (skills, projects data)",
+    "API route: /api/send (email sending)"
+  ]
+}
