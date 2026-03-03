@@ -1,0 +1,560 @@
+---
+title: Animations
+description: Animation components and patterns using Framer Motion
+---
+
+The portfolio uses Framer Motion extensively for smooth, declarative animations. This page documents the animation components and patterns used throughout the project.
+
+## Animation components
+
+### BlurIn
+
+Fade-in animation with blur effect.
+
+**Location:** `src/components/reveal-animations.tsx`
+
+**Props:**
+
+```typescript
+interface BlurIntProps {
+  children: ReactNode
+  className?: string
+  delay?: number      // Default: 0
+  duration?: number   // Default: 1
+  variant?: {
+    hidden: { filter: string; opacity: number }
+    visible: { filter: string; opacity: number }
+  }
+}
+```
+
+**Usage:**
+
+```tsx
+import { BlurIn } from "@/components/reveal-animations"
+
+<BlurIn delay={0.7}>
+  <p>Hi, I am</p>
+</BlurIn>
+
+<BlurIn delay={1}>
+  <h1>John Doe</h1>
+</BlurIn>
+
+<BlurIn delay={1.2} duration={2}>
+  <p>AI Enthusiast</p>
+</BlurIn>
+```
+
+**Animation variants:**
+
+```typescript
+const defaultVariants = {
+  hidden: { filter: "blur(10px)", opacity: 0 },
+  visible: { filter: "blur(0px)", opacity: 1 },
+}
+```
+
+**Example from codebase:** `src/components/sections/hero.tsx:34`
+
+The hero section uses sequential BlurIn animations:
+
+```tsx
+<BlurIn delay={0.7}>
+  <p>Hi, I am</p>
+</BlurIn>
+
+<BlurIn delay={1}>
+  <h1>{config.author}</h1>
+</BlurIn>
+
+<BlurIn delay={1.2}>
+  <p>AI Enthusiast</p>
+</BlurIn>
+```
+
+### BoxReveal
+
+Reveal animation with sliding overlay box.
+
+**Location:** `src/components/reveal-animations.tsx`
+
+**Props:**
+
+```typescript
+interface BoxRevealProps {
+  children: JSX.Element
+  width?: "fit-content" | "100%"   // Default: "fit-content"
+  boxColor?: string                 // Default: transparent
+  duration?: number                 // Default: 0.5
+  delay?: number                    // Default: 0
+  once?: boolean                    // Default: true
+}
+```
+
+**Usage:**
+
+```tsx
+import { BoxReveal } from "@/components/reveal-animations"
+
+<BoxReveal delay={2} width="100%">
+  <Button>Resume</Button>
+</BoxReveal>
+
+<BoxReveal>
+  <h2>SKILLS</h2>
+</BoxReveal>
+```
+
+**How it works:**
+
+1. Content starts hidden with opacity 0 and y offset
+2. Content fades in and moves to position
+3. Colored box slides from left to right, revealing content
+4. Uses `useInView` hook to trigger when element is visible
+
+**Animation variants:**
+
+```typescript
+// Content animation
+const contentVariants = {
+  hidden: { opacity: 0, y: 75 },
+  visible: { opacity: 1, y: 0 },
+}
+
+// Box slide animation
+const boxVariants = {
+  hidden: { left: 0 },
+  visible: { left: "100%" },
+}
+```
+
+**Example from codebase:** `src/components/sections/hero.tsx:91`
+
+Used for the resume button:
+
+```tsx
+<BoxReveal delay={2} width="100%">
+  <Button className="flex items-center gap-2 w-full">
+    <File size={24} />
+    <p>Resume</p>
+  </Button>
+</BoxReveal>
+```
+
+**Example from codebase:** `src/components/sections/skills.tsx:11`
+
+Used for the skills heading:
+
+```tsx
+<BoxReveal width="100%">
+  <h2>SKILLS</h2>
+</BoxReveal>
+```
+
+## Animation patterns
+
+### Framer Motion basics
+
+Components use Framer Motion's declarative API:
+
+```tsx
+import { motion } from "framer-motion"
+
+<motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.5, delay: 0.2 }}
+>
+  Content
+</motion.div>
+```
+
+### AnimatePresence
+
+Used for enter/exit animations:
+
+```tsx
+import { AnimatePresence } from "framer-motion"
+
+<AnimatePresence mode="wait">
+  {isLoading && <Loader />}
+</AnimatePresence>
+```
+
+**Example from codebase:** `src/components/header/header.tsx:90`
+
+```tsx
+<AnimatePresence mode="wait">
+  {isActive && <Nav setIsActive={setIsActive} />}
+</AnimatePresence>
+```
+
+### Animation variants
+
+Define reusable animation states:
+
+```typescript
+const fadeVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1 },
+}
+
+<motion.div
+  variants={fadeVariants}
+  initial="hidden"
+  animate="visible"
+/>
+```
+
+**Example from codebase:** `src/components/header/anim.ts`
+
+```typescript
+export const opacity = {
+  initial: { opacity: 0 },
+  open: { opacity: 1, transition: { duration: 0.35 } },
+  closed: { opacity: 0, transition: { duration: 0.35 } },
+}
+
+export const background = {
+  initial: { height: 0 },
+  open: { height: "100vh", transition: { duration: 0.5 } },
+  closed: { height: 0, transition: { duration: 0.5 } },
+}
+```
+
+### useAnimation hook
+
+Programmatic animation control:
+
+```tsx
+import { useAnimation } from "framer-motion"
+
+const controls = useAnimation()
+
+useEffect(() => {
+  if (condition) {
+    controls.start("visible")
+  } else {
+    controls.start("hidden")
+  }
+}, [condition])
+
+<motion.div animate={controls} variants={variants} />
+```
+
+**Example from codebase:** `src/components/ui/floating-dock.tsx:103`
+
+```tsx
+const controls = useAnimation()
+
+useEffect(() => {
+  if (showHint) {
+    controls.start({
+      opacity: [0, 1, 1, 0],
+      x: [-50, -50, 50, 50],
+      transition: {
+        duration: 2,
+        repeat: Infinity,
+        ease: "easeInOut",
+      },
+    })
+  } else {
+    controls.stop()
+  }
+}, [showHint])
+```
+
+### useInView hook
+
+Trigger animations when element enters viewport:
+
+```tsx
+import { useInView } from "framer-motion"
+
+const ref = useRef(null)
+const isInView = useInView(ref, { once: true })
+
+useEffect(() => {
+  if (isInView) {
+    controls.start("visible")
+  }
+}, [isInView])
+
+<div ref={ref}>
+  <motion.div animate={controls} />
+</div>
+```
+
+**Example from codebase:** `src/components/reveal-animations.tsx:67`
+
+Used in BoxReveal:
+
+```tsx
+const ref = useRef(null)
+const isInView = useInView(ref, { once })
+
+useEffect(() => {
+  if (isInView) {
+    slideControls.start("visible")
+    mainControls.start("visible")
+  } else {
+    slideControls.start("hidden")
+    mainControls.start("hidden")
+  }
+}, [isInView, mainControls, slideControls])
+```
+
+### Motion values
+
+Reactive animation values:
+
+```tsx
+import { useMotionValue, useTransform } from "framer-motion"
+
+const x = useMotionValue(0)
+const opacity = useTransform(x, [-100, 0, 100], [0, 1, 0])
+
+<motion.div style={{ x, opacity }} />
+```
+
+**Example from codebase:** `src/components/ui/floating-dock.tsx:100`
+
+```tsx
+let mouseX = useMotionValue(Infinity)
+
+<motion.div
+  onMouseMove={(e) => mouseX.set(e.pageX)}
+  onMouseLeave={() => mouseX.set(Infinity)}
+>
+  {items.map((item) => (
+    <IconContainer mouseX={mouseX} {...item} />
+  ))}
+</motion.div>
+```
+
+**Example from codebase:** `src/components/ui/ace-textarea.tsx:14`
+
+```tsx
+let mouseX = useMotionValue(0)
+let mouseY = useMotionValue(0)
+
+function handleMouseMove({ currentTarget, clientX, clientY }: any) {
+  let { left, top } = currentTarget.getBoundingClientRect()
+  mouseX.set(clientX - left)
+  mouseY.set(clientY - top)
+}
+
+<motion.div
+  style={{
+    background: useMotionTemplate`
+      radial-gradient(
+        ${visible ? radius + "px" : "0px"} circle at ${mouseX}px ${mouseY}px,
+        var(--brand),
+        transparent 80%
+      )
+    `,
+  }}
+  onMouseMove={handleMouseMove}
+/>
+```
+
+### Spring animations
+
+Physics-based spring animations:
+
+```tsx
+import { useSpring } from "framer-motion"
+
+const width = useSpring(widthTransform, {
+  mass: 0.1,
+  stiffness: 150,
+  damping: 12,
+})
+
+<motion.div style={{ width }} />
+```
+
+**Example from codebase:** `src/components/ui/floating-dock.tsx:199`
+
+```tsx
+const widthTransform = useTransform(distance, [-150, 0, 150], [40, 80, 40])
+const heightTransform = useTransform(distance, [-150, 0, 150], [40, 80, 40])
+
+const width = useSpring(widthTransform, {
+  mass: 0.1,
+  stiffness: 150,
+  damping: 12,
+})
+
+const height = useSpring(heightTransform, {
+  mass: 0.1,
+  stiffness: 150,
+  damping: 12,
+})
+
+<motion.div style={{ width, height }} />
+```
+
+## Common animation configurations
+
+### Transition presets
+
+**Quick fade:**
+```typescript
+transition={{ duration: 0.3 }}
+```
+
+**Smooth slide:**
+```typescript
+transition={{ duration: 0.5, ease: "easeInOut" }}
+```
+
+**Spring:**
+```typescript
+transition={{ type: "spring", stiffness: 260, damping: 15 }}
+```
+
+**Delayed sequence:**
+```typescript
+transition={{ duration: 0.5, delay: 0.2 * index }}
+```
+
+### Easing functions
+
+```typescript
+"linear"           // Constant speed
+"easeIn"           // Slow start
+"easeOut"          // Slow end
+"easeInOut"        // Slow start and end
+"circIn"           // Circular ease in
+"circOut"          // Circular ease out
+"backIn"           // Back ease in
+"backOut"          // Back ease out
+"anticipate"       // Anticipation
+```
+
+**Custom easing:**
+```typescript
+transition={{ ease: [0.17, 0.67, 0.83, 0.67] }}
+```
+
+## GSAP animations
+
+Some components use GSAP for complex timeline animations.
+
+**Example from codebase:** `src/components/preloader/index.tsx:53`
+
+```tsx
+import gsap from "gsap"
+
+const loadingPercentRef = useRef({ value: 0 })
+
+useEffect(() => {
+  const tween = gsap.to(loadingPercentRef.current, {
+    value: 100,
+    duration: 2.5,
+    ease: "slow(0.7,0.7,false)",
+    onUpdate: () => {
+      setLoadingPercent(loadingPercentRef.current.value)
+    },
+    onComplete: () => {
+      setIsLoading(false)
+    },
+  })
+  
+  return () => tween.kill()
+}, [])
+```
+
+## Performance considerations
+
+### Will-change optimization
+
+For frequently animated properties:
+
+```css
+.animated-element {
+  will-change: transform, opacity;
+}
+```
+
+### GPU acceleration
+
+Use transform properties for better performance:
+
+```tsx
+// Good - GPU accelerated
+<motion.div
+  animate={{ x: 100, scale: 1.2 }}
+/>
+
+// Avoid - triggers layout
+<motion.div
+  animate={{ left: 100, width: 200 }}
+/>
+```
+
+### Reduce motion
+
+Respect user preferences:
+
+```tsx
+import { useReducedMotion } from "framer-motion"
+
+const shouldReduceMotion = useReducedMotion()
+
+<motion.div
+  animate={{ opacity: 1 }}
+  transition={{ duration: shouldReduceMotion ? 0 : 0.5 }}
+/>
+```
+
+## Animation best practices
+
+1. **Use appropriate durations**
+   - Quick interactions: 0.2-0.3s
+   - Standard animations: 0.4-0.6s
+   - Dramatic effects: 0.8-1.2s
+
+2. **Stagger animations**
+   ```tsx
+   {items.map((item, i) => (
+     <motion.div
+       key={i}
+       initial={{ opacity: 0 }}
+       animate={{ opacity: 1 }}
+       transition={{ delay: i * 0.1 }}
+     />
+   ))}
+   ```
+
+3. **Exit animations**
+   ```tsx
+   <motion.div
+     initial={{ opacity: 0 }}
+     animate={{ opacity: 1 }}
+     exit={{ opacity: 0 }}
+   />
+   ```
+
+4. **Limit simultaneous animations**
+   - Too many animations can overwhelm users
+   - Use sequential reveals for better UX
+
+5. **Test performance**
+   - Monitor frame rates
+   - Use Chrome DevTools Performance tab
+   - Test on lower-end devices
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="UI components" icon="layer-group" href="/components/ui-components">
+    Explore animated UI components
+  </Card>
+  
+  <Card title="Sections" icon="puzzle-piece" href="/components/sections">
+    See animations in page sections
+  </Card>
+</CardGroup>

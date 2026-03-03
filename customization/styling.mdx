@@ -1,0 +1,330 @@
+---
+title: Styling
+description: Customize the visual appearance using Tailwind CSS, global styles, and component styling
+---
+
+The portfolio uses a modern styling approach combining Tailwind CSS utility classes, CSS variables, and global styles for maximum flexibility and maintainability.
+
+## Tailwind configuration
+
+The Tailwind setup is defined in `tailwind.config.ts` with custom extensions and plugins.
+
+### Content paths
+
+Tailwind scans these directories for class names:
+
+```typescript
+content: [
+  "./pages/**/*.{ts,tsx}",
+  "./components/**/*.{ts,tsx}",
+  "./app/**/*.{ts,tsx}",
+  "./src/**/*.{ts,tsx}",
+]
+```
+
+### Container configuration
+
+The container utility is centered with responsive padding:
+
+```typescript
+container: {
+  center: true,
+  padding: "2rem",
+  screens: {
+    "2xl": "1400px",
+  },
+}
+```
+
+Usage:
+
+```tsx
+<div className="container">
+  {/* Content is centered and max 1400px wide */}
+</div>
+```
+
+## Theme extensions
+
+### Custom colors
+
+All theme colors are mapped from CSS variables:
+
+```typescript
+colors: {
+  border: "hsl(var(--border))",
+  input: "hsl(var(--input))",
+  ring: "hsl(var(--ring))",
+  background: "hsl(var(--background))",
+  foreground: "hsl(var(--foreground))",
+  brand: "var(--brand)",
+  primary: {
+    DEFAULT: "hsl(var(--primary))",
+    foreground: "hsl(var(--primary-foreground))",
+  },
+  secondary: {
+    DEFAULT: "hsl(var(--secondary))",
+    foreground: "hsl(var(--secondary-foreground))",
+  },
+}
+```
+
+Use these in your components:
+
+```tsx
+<div className="bg-background text-foreground border border-border">
+  <h1 className="text-primary">Hello</h1>
+  <p className="text-muted-foreground">Subtitle</p>
+</div>
+```
+
+### Border radius utilities
+
+Responsive border radius based on the `--radius` variable:
+
+```typescript
+borderRadius: {
+  lg: "var(--radius)",           // 0.5rem
+  md: "calc(var(--radius) - 2px)", // 0.5rem - 2px
+  sm: "calc(var(--radius) - 4px)", // 0.5rem - 4px
+}
+```
+
+Examples:
+
+```tsx
+<div className="rounded-lg">Large radius</div>
+<div className="rounded-md">Medium radius</div>
+<div className="rounded-sm">Small radius</div>
+```
+
+## Animations
+
+Custom keyframe animations for interactive components:
+
+```typescript
+keyframes: {
+  "accordion-down": {
+    from: { height: "0" },
+    to: { height: "var(--radix-accordion-content-height)" },
+  },
+  "accordion-up": {
+    from: { height: "var(--radix-accordion-content-height)" },
+    to: { height: "0" },
+  },
+}
+```
+
+Apply with utility classes:
+
+```typescript
+animation: {
+  "accordion-down": "accordion-down 0.2s ease-out",
+  "accordion-up": "accordion-up 0.2s ease-out",
+}
+```
+
+## Global styles
+
+Base styles are defined in `src/app/globals.css`:
+
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  scroll-behavior: smooth;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+```
+
+### What this does
+
+- Imports Tailwind's layers
+- Enables smooth scrolling
+- Sets default border color on all elements
+- Applies theme background and text colors to body
+
+## Plugins
+
+The configuration includes two plugins:
+
+### Tailwind Animate
+
+```typescript
+plugins: [require("tailwindcss-animate")]
+```
+
+Provides additional animation utilities out of the box.
+
+### Color variables plugin
+
+A custom plugin that exposes all Tailwind colors as CSS variables:
+
+```typescript
+function addVariablesForColors({ addBase, theme }: any) {
+  let allColors = flattenColorPalette(theme("colors"));
+  let newVars = Object.fromEntries(
+    Object.entries(allColors).map(([key, val]) => [`--${key}`, val])
+  );
+
+  addBase({
+    ":root": newVars,
+  });
+}
+```
+
+This allows you to use colors like:
+
+```css
+.custom-class {
+  background: var(--blue-500);
+  color: var(--gray-900);
+}
+```
+
+## Styling patterns
+
+### Component-level styling
+
+Use Tailwind utility classes directly in components:
+
+```tsx
+export function Card({ children }) {
+  return (
+    <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+      <div className="p-6">
+        {children}
+      </div>
+    </div>
+  );
+}
+```
+
+### Conditional styling
+
+Combine classes with conditions:
+
+```tsx
+<button
+  className={`
+    px-4 py-2 rounded-md
+    ${variant === 'primary' ? 'bg-primary text-primary-foreground' : ''}
+    ${variant === 'secondary' ? 'bg-secondary text-secondary-foreground' : ''}
+  `}
+>
+  Button
+</button>
+```
+
+### Dark mode variants
+
+Apply different styles for dark mode:
+
+```tsx
+<div className="bg-white dark:bg-gray-900 text-black dark:text-white">
+  Content
+</div>
+```
+
+## Customizing animations
+
+Add your own animations to `tailwind.config.ts`:
+
+```typescript
+keyframes: {
+  "fade-in": {
+    from: { opacity: "0" },
+    to: { opacity: "1" },
+  },
+  "slide-up": {
+    from: { transform: "translateY(20px)", opacity: "0" },
+    to: { transform: "translateY(0)", opacity: "1" },
+  },
+}
+
+animation: {
+  "fade-in": "fade-in 0.3s ease-in",
+  "slide-up": "slide-up 0.4s ease-out",
+}
+```
+
+Use in components:
+
+```tsx
+<div className="animate-fade-in">
+  Fades in smoothly
+</div>
+```
+
+## Responsive design
+
+Tailwind's responsive modifiers work out of the box:
+
+```tsx
+<div className="
+  text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl
+  p-4 md:p-6 lg:p-8
+  grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3
+">
+  Responsive content
+</div>
+```
+
+## Best practices
+
+### Use semantic color names
+
+```tsx
+// Good
+<button className="bg-primary text-primary-foreground">Submit</button>
+
+// Avoid
+<button className="bg-blue-500 text-white">Submit</button>
+```
+
+### Leverage CSS variables for dynamic values
+
+```css
+.custom-element {
+  background: hsl(var(--background));
+  border-radius: var(--radius);
+}
+```
+
+### Keep utility classes organized
+
+```tsx
+// Group related utilities
+<div className="
+  flex items-center justify-between
+  px-4 py-2
+  bg-card border border-border rounded-lg
+  hover:shadow-md transition-shadow
+">
+```
+
+### Use @apply for repeated patterns
+
+For frequently used combinations, create utility classes in `globals.css`:
+
+```css
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-md font-medium transition-colors;
+  }
+  
+  .btn-primary {
+    @apply bg-primary text-primary-foreground hover:opacity-90;
+  }
+}
+```

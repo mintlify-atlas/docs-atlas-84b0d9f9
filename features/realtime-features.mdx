@@ -1,0 +1,580 @@
+---
+title: Realtime features
+description: Live multiplayer features with Socket.IO including shared cursors and chat
+---
+
+The portfolio includes realtime multiplayer features that allow visitors to see each other's presence, track mouse movements, and chat in real-time using Socket.IO.
+
+## Technology stack
+
+```json package.json
+{
+  "dependencies": {
+    "socket.io-client": "^4.7.5"
+  }
+}
+```
+
+## Architecture overview
+
+The realtime system consists of:
+
+- **Socket.IO client** - Manages WebSocket connections
+- **Remote cursors** - Displays other users' cursor positions
+- **Online users** - Shows active users and chat functionality
+- **Context provider** - Shares socket state across components
+
+## Socket context setup
+
+The socket connection is managed through a React context located at `src/contexts/socketio.tsx`:
+
+```tsx socketio.tsx
+"use client";
+import React, {
+  createContext,
+  Dispatch,
+  ReactNode,
+  SetStateAction,
+  useEffect,
+  useState,
+} from "react";
+import { io, Socket } from "socket.io-client";
+import { generateRandomCursor } from "../lib/generate-random-cursor"
+
+export type User = {
+  socketId: string;
+  name: string;
+  color: string;
+  pos: {
+    x: number;
+    y: number;
+  };
+  location: string;
+  flag: string;
+};
+
+export type Message = {
+  socketId: string;
+  content: string;
+  time: Date;
+  username: string;
+};
+
+export type UserMap = Map<string, User>;
+
+type SocketContextType = {
+  socket: Socket | null;
+  users: UserMap;
+  setUsers: Dispatch<SetStateAction<UserMap>>;
+  msgs: Message[];
+};
+
+const INITIAL_STATE: SocketContextType = {
+  socket: null,
+  users: new Map(),
+  setUsers: () => {},
+  msgs: [],
+};
+
+export const SocketContext = createContext<SocketContextType>(INITIAL_STATE);
+
+const SocketContextProvider = ({ children }: { children: ReactNode }) => {
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [users, setUsers] = useState<UserMap>(new Map());
+  const [msgs, setMsgs] = useState<Message[]>([]);
+
+  // SETUP SOCKET.IO
+  useEffect(() => {
+    const username = localStorage.getItem("username") || generateRandomCursor().name
+    const socket = io(process.env.NEXT_PUBLIC_WS_URL!, {
+      query: { username },
+    });
+    setSocket(socket);
+    
+    socket.on("connect", () => {});
+    
+    socket.on("msgs-receive-init", (msgs) => {
+      setMsgs(msgs);
+    });
+    
+    socket.on("msg-receive", (msgs) => {
+      setMsgs((p) => [...p, msgs]);
+    });
+    
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
+  return (
+    <SocketContext.Provider value={{ socket: socket, users, setUsers, msgs }}>
+      {children}
+    </SocketContext.Provider>
+  );
+};
+
+export default SocketContextProvider;
+```
+
+## Integration with app
+
+Wrap your application with the `SocketContextProvider`:
+
+```tsx app/layout.tsx
+import SocketContextProvider from "@/contexts/socketio";
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        <SocketContextProvider>
+          {children}
+        </SocketContextProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+## Remote cursors
+
+The remote cursor system tracks and displays other users' mouse positions. Located at `src/components/realtime/remote-cursors.tsx`:
+
+```tsx remote-cursors.tsx
+"use client";
+import { SocketContext, User, UserMap } from "@/contexts/socketio";
+import { useMouse } from "@/hooks/use-mouse";
+import { useThrottle } from "@/hooks/use-throttle";
+import { MousePointer2 } from "lucide-react";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { useMediaQuery } from "@/hooks/use-media-query";
+
+const RemoteCursors = () => {
+  const { socket, users: _users, setUsers } = useContext(SocketContext);
+  const isMobile = useMediaQuery("(max-width: 768px)");
+  const { x, y } = useMouse({ allowPage: true });
+  
+  useEffect(() => {
+    if (typeof window === "undefined" || !socket || isMobile) return;
+    
+    socket.on("cursor-changed", (data) => {
+      setUsers((prev: UserMap) => {
+        const newMap = new Map(prev);
+        if (!prev.has(data.socketId)) {
+          newMap.set(data.socketId, { ...data });
+        } else {
+          newMap.set(data.socketId, { ...prev.get(data.socketId), ...data });
+        }
+        return newMap;
+      });
+    });
+    
+    socket.on("users-updated", (data: User[]) => {
+      const newMap = new Map();
+      data.forEach((user) => {
+        newMap.set(user.socketId, { ...user });
+      });
+      setUsers(newMap);
+    });
+    
+    return () => {
+      socket.off("cursor-changed");
+    };
+  }, [socket, isMobile]);
+  
+  const handleMouseMove = useThrottle((x, y) => {
+    socket?.emit("cursor-change", {
+      pos: { x, y },
+      socketId: socket.id,
+    });
+  }, 200);
+  
+  useEffect(() => {
+    if (isMobile) return;
+    handleMouseMove(x, y);
+  }, [x, y, isMobile]);
+  
+  const users = Array.from(_users.values());
+  
+  return (
+    <div className="h-0 z-10 relative">
+      {users
+        .filter((user) => user.socketId !== socket?.id)
+        .map((user) => (
+          <Cursor
+            key={user.socketId}
+            x={user.pos.x}
+            y={user.pos.y}
+            color={user.color}
+            socketId={user.socketId}
+            headerText={`${user.location} ${user.flag}`}
+          />
+        ))}
+    </div>
+  );
+};
+```
+
+### Cursor component
+
+Individual cursors are animated using Framer Motion:
+
+```tsx remote-cursors.tsx
+const Cursor = ({
+  color,
+  x,
+  y,
+  headerText,
+  socketId,
+}: {
+  x: number;
+  y: number;
+  color?: string;
+  headerText: string;
+  socketId: string;
+}) => {
+  const [showText, setShowText] = useState(false);
+  const [msgText, setMsgText] = useState("");
+  const { msgs } = useContext(SocketContext);
+
+  useEffect(() => {
+    setShowText(true);
+    const fadeOutTimeout = setTimeout(() => {
+      setShowText(false);
+    }, 3000);
+
+    return () => {
+      clearTimeout(fadeOutTimeout);
+    };
+  }, [x, y, msgText]);
+
+  return (
+    <motion.div
+      animate={{ x: x, y: y }}
+      className="w-6 h-6"
+      transition={{
+        duration: 0.2,
+        ease: "easeOut",
+      }}
+      onMouseEnter={() => setShowText(true)}
+      onMouseLeave={() => setShowText(false)}
+    >
+      <MousePointer2
+        className="w-6 h-6 z-[9999999]"
+        style={{ color: color }}
+        strokeWidth={7.2}
+      />
+      <AnimatePresence>
+        {showText && headerText && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: -7 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="text-xs rounded-xl w-fit p-2 px-4 ml-4"
+            style={{ backgroundColor: color + "f0" }}
+          >
+            <div className="text-nowrap">{headerText}</div>
+            {msgText && <div className="font-mono w-44">{msgText}</div>}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+};
+```
+
+## Online users and chat
+
+The online users component displays active users and provides chat functionality. Located at `src/components/realtime/online-users.tsx`:
+
+```tsx online-users.tsx
+"use client";
+import React, { useContext, useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { motion } from "framer-motion";
+import { SocketContext, type User, type Message } from "@/contexts/socketio";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import { Input } from "../ui/input";
+import { ScrollArea } from "../ui/scroll-area";
+import { Check, Edit, X } from "lucide-react";
+
+const OnlineUsers = () => {
+  const { socket, users: _users, msgs } = useContext(SocketContext);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const chatContainer = useRef<HTMLDivElement>(null);
+  const users = Array.from(_users.values());
+
+  const containerScrollBottom = () => {
+    const t = setTimeout(() => {
+      if (chatContainer.current) {
+        chatContainer.current.scrollTop = chatContainer.current.scrollHeight;
+      }
+      clearTimeout(t);
+    }, 1);
+  };
+  
+  useEffect(containerScrollBottom, [msgs]);
+
+  const sendMessage = () => {
+    if (!inputRef.current?.value) return;
+    const msg = inputRef.current.value;
+    inputRef.current.value = "";
+
+    if (msg.trim() === "") return;
+    socket?.emit("msg-send", {
+      content: msg,
+    });
+  };
+  
+  const updateUsername = (newName: string) => {
+    socket?.emit("username-change", {
+      username: newName,
+    });
+    localStorage.setItem("username", newName);
+  };
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="ghost" className="p-0 m-0 mr-4 h-fit w-fit">
+          <div className="relative flex flex-col gap-2">
+            <div className="flex items-center gap-2 h-fit">
+              <div className="w-2 h-2 animate-pulse rounded-full bg-green-400"></div>
+              {users.length} online
+            </div>
+          </div>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-80">
+        <Tabs defaultValue="account" className="w-full h-[30rem] flex flex-col items-center">
+          <TabsList className="w-full h-8">
+            <TabsTrigger className="w-1/2 h-full" value="users">
+              Users
+            </TabsTrigger>
+            <TabsTrigger className="w-1/2 h-full" value="chat">
+              Chat
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="users" className="w-full h-full overflow-auto">
+            <ScrollArea className="w-full h-full">
+              <motion.div>
+                <div className="space-y-2 mb-8">
+                  <p className="text-sm text-muted-foreground text-center">
+                    There {users.length === 1 ? "is" : "are"} {users.length} user
+                    {users.length === 1 ? "" : "s"} online here!
+                  </p>
+                </div>
+                <motion.ul className="grid gap-4">
+                  {users.map((user, i) => (
+                    <UserItem
+                      key={i}
+                      user={user}
+                      socket={socket}
+                      updateUsername={updateUsername}
+                    />
+                  ))}
+                </motion.ul>
+              </motion.div>
+            </ScrollArea>
+          </TabsContent>
+          <TabsContent value="chat" className="w-full flex-1 overflow-auto flex flex-col">
+            <div className="w-full h-full overflow-auto" ref={chatContainer}>
+              {msgs.map((msg, i) => (
+                <div key={i}>
+                  <span
+                    style={{
+                      color: users.find((u) => u.socketId === msg.socketId)?.color || "#777",
+                    }}
+                    className="mr-2"
+                  >
+                    {msg.username} {msg.socketId === socket?.id && "(you)"}:
+                  </span>
+                  <span className="font-mono">{msg.content}</span>
+                </div>
+              ))}
+            </div>
+            <div className="w-full h-20 flex items-center gap-2">
+              <Input
+                className="flex-1"
+                ref={inputRef}
+                placeholder="Enter message"
+                onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+              />
+              <Button onClick={sendMessage}>Send</Button>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </PopoverContent>
+    </Popover>
+  );
+};
+```
+
+## Socket events
+
+### Client-to-server events
+
+```typescript
+// Update cursor position
+socket.emit("cursor-change", {
+  pos: { x: number, y: number },
+  socketId: string,
+});
+
+// Send chat message
+socket.emit("msg-send", {
+  content: string,
+});
+
+// Update username
+socket.emit("username-change", {
+  username: string,
+});
+```
+
+### Server-to-client events
+
+```typescript
+// Cursor position updated
+socket.on("cursor-changed", (data) => {
+  // Update user position in state
+});
+
+// User list updated
+socket.on("users-updated", (data: User[]) => {
+  // Update users list
+});
+
+// Initial messages on connect
+socket.on("msgs-receive-init", (msgs) => {
+  // Set initial chat messages
+});
+
+// New message received
+socket.on("msg-receive", (msg) => {
+  // Add message to chat
+});
+```
+
+## Performance optimizations
+
+### Throttling mouse events
+
+Mouse movement is throttled to prevent overwhelming the server:
+
+```typescript
+const handleMouseMove = useThrottle((x, y) => {
+  socket?.emit("cursor-change", {
+    pos: { x, y },
+    socketId: socket.id,
+  });
+}, 200); // Throttle to every 200ms
+```
+
+### Mobile detection
+
+Cursor tracking is disabled on mobile devices:
+
+```typescript
+const isMobile = useMediaQuery("(max-width: 768px)");
+
+useEffect(() => {
+  if (isMobile) return; // Skip on mobile
+  handleMouseMove(x, y);
+}, [x, y, isMobile]);
+```
+
+## Environment configuration
+
+Set up the WebSocket server URL:
+
+```env .env.local
+NEXT_PUBLIC_WS_URL=http://localhost:3001
+# or for production
+NEXT_PUBLIC_WS_URL=https://your-socket-server.com
+```
+
+## Usage in components
+
+```tsx
+import RemoteCursors from "@/components/realtime/remote-cursors";
+import OnlineUsers from "@/components/realtime/online-users";
+
+export default function App() {
+  return (
+    <div>
+      <RemoteCursors />
+      <header>
+        <OnlineUsers />
+      </header>
+      {/* Your content */}
+    </div>
+  );
+}
+```
+
+## Message display features
+
+Cursors show recent messages from users:
+
+```typescript
+useEffect(() => {
+  if (msgs.at(-1)?.socketId === socketId) {
+    const lastMsgContent = msgs.at(-1)?.content || "";
+    const textSlice =
+      lastMsgContent.slice(0, 30) + (lastMsgContent.length > 30 ? "..." : "");
+    const timeToRead = Math.min(4000, Math.max(textSlice.length * 100, 1000));
+    setMsgText(textSlice);
+    
+    const t = setTimeout(() => {
+      setMsgText("");
+      clearTimeout(t);
+    }, timeToRead);
+  }
+}, [msgs]);
+```
+
+## Best practices
+
+### Connection management
+
+- Socket connection is established once at the app level
+- Cleanup on unmount to prevent memory leaks
+- Automatic reconnection handled by Socket.IO
+
+### State management
+
+- Use a Map for efficient user lookups by socketId
+- Immutable updates prevent unnecessary re-renders
+- Context provides global access to socket state
+
+### Error handling
+
+```typescript
+useEffect(() => {
+  if (!socket) return;
+  
+  socket.on("connect_error", (error) => {
+    console.error("Connection error:", error);
+  });
+  
+  socket.on("disconnect", (reason) => {
+    console.log("Disconnected:", reason);
+  });
+  
+  return () => {
+    socket.off("connect_error");
+    socket.off("disconnect");
+  };
+}, [socket]);
+```
+
+<Warning>
+The realtime features require a Socket.IO server. Ensure `NEXT_PUBLIC_WS_URL` is configured correctly.
+</Warning>
+
+<Tip>
+Test multiplayer features by opening your portfolio in multiple browser windows or incognito tabs.
+</Tip>

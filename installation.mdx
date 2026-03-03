@@ -1,0 +1,307 @@
+---
+title: Installation
+description: Complete guide to installing and configuring your 3D interactive portfolio
+---
+
+# Installation
+
+This guide covers the complete installation process for the 3D Interactive Portfolio, including dependencies, environment setup, and configuration.
+
+## System requirements
+
+Ensure your development environment meets these requirements:
+
+- **Node.js**: Version 20.x or higher
+- **npm**: Version 9.x or higher (comes with Node.js)
+- **Git**: Latest version for cloning the repository
+- **Modern browser**: Chrome, Firefox, Safari, or Edge for development
+
+<Note>
+  This project uses TypeScript and requires Node.js 20+ for optimal performance with Next.js 14.
+</Note>
+
+## Step-by-step installation
+
+<Steps>
+  <Step title="Clone the repository">
+    Clone the GitHub repository to your local machine:
+
+    ```bash
+    git clone https://github.com/Abhiz2411/3D-interactive-portfolio.git
+    ```
+
+    Navigate to the project directory:
+
+    ```bash
+    cd 3D-interactive-portfolio
+    ```
+  </Step>
+
+  <Step title="Install dependencies">
+    Install all required npm packages:
+
+    <CodeGroup>
+      ```bash npm
+      npm install
+      ```
+
+      ```bash yarn
+      yarn install
+      ```
+
+      ```bash pnpm
+      pnpm install
+      ```
+    </CodeGroup>
+
+    This installs the complete tech stack including:
+
+    **Core Framework:**
+    - `next@14.2.35` - Next.js framework
+    - `react@^18` - React library
+    - `react-dom@^18` - React DOM
+    - `typescript@^5` - TypeScript support
+
+    **Styling:**
+    - `tailwindcss@^3.4.1` - Utility-first CSS
+    - `sass@^1.77.8` - SASS preprocessor
+    - `tailwind-merge@^2.4.0` - Tailwind class merging
+    - `tailwindcss-animate@^1.0.7` - Animation utilities
+
+    **Animations:**
+    - `gsap@^3.12.5` - GreenSock Animation Platform
+    - `@gsap/react@^2.1.1` - GSAP React integration
+    - `framer-motion@^11.3.17` - Motion library for React
+    - `lenis@^1.1.6` - Smooth scroll library
+
+    **3D Graphics:**
+    - `@splinetool/react-spline@^4.0.0` - Spline React component
+    - `@splinetool/runtime@^1.9.3` - Spline runtime
+    - `three@^0.167.1` - 3D graphics library
+
+    **UI Components:**
+    - Radix UI components (`@radix-ui/*`)
+    - `lucide-react@^0.416.0` - Icon library
+    - `react-icons@^5.2.1` - Additional icons
+
+    **Utilities:**
+    - `resend@^4.0.0` - Email service
+    - `socket.io-client@^4.7.5` - Real-time communication
+    - `zod@^3.23.8` - Schema validation
+    - `next-themes@^0.3.0` - Theme management
+  </Step>
+
+  <Step title="Configure environment variables">
+    Create a `.env.local` file in the root directory:
+
+    ```bash
+    touch .env.local
+    ```
+
+    Add the following environment variables:
+
+    ```bash .env.local
+    # Resend API Key (required for contact form)
+    RESEND_API_KEY=your_resend_api_key_here
+
+    # Optional: Analytics (Umami)
+    UMAMI_DOMAIN=https://your-umami-instance.com/script.js
+    UMAMI_SITE_ID=your-site-id
+    ```
+
+    <Warning>
+      Never commit your `.env.local` file to version control. It's already included in `.gitignore` by default.
+    </Warning>
+  </Step>
+
+  <Step title="Get your Resend API key">
+    The contact form requires a Resend API key:
+
+    1. Sign up for a free account at [resend.com](https://resend.com)
+    2. Navigate to the API Keys section in your dashboard
+    3. Create a new API key
+    4. Copy the key and paste it in your `.env.local` file
+
+    <Tip>
+      The free tier includes 100 emails per day and 3,000 emails per month, which is perfect for portfolio contact forms.
+    </Tip>
+  </Step>
+
+  <Step title="Start the development server">
+    Run the development server:
+
+    <CodeGroup>
+      ```bash npm
+      npm run dev
+      ```
+
+      ```bash yarn
+      yarn dev
+      ```
+
+      ```bash pnpm
+      pnpm dev
+      ```
+    </CodeGroup>
+
+    The application will start at `http://localhost:3000`
+
+    You should see output similar to:
+
+    ```bash
+    ▲ Next.js 14.2.35
+    - Local:        http://localhost:3000
+    - Ready in 2.3s
+    ```
+  </Step>
+</Steps>
+
+## Project structure
+
+Understand the organization of the codebase:
+
+```
+3D-interactive-portfolio/
+├── public/
+│   └── assets/          # Images, fonts, and static files
+├── src/
+│   ├── app/
+│   │   ├── layout.tsx   # Root layout with providers
+│   │   ├── page.tsx     # Home page with sections
+│   │   ├── about/       # About page
+│   │   ├── blog/        # Blog page
+│   │   ├── contact/     # Contact page
+│   │   └── projects/    # Projects page
+│   ├── components/
+│   │   ├── sections/    # Hero, Skills, Projects, Contact
+│   │   ├── ui/          # Reusable UI components
+│   │   ├── header/      # Navigation header
+│   │   ├── footer/      # Footer component
+│   │   └── realtime/    # Socket.io components
+│   ├── data/
+│   │   ├── config.ts    # Site configuration
+│   │   └── projects.tsx # Projects data
+│   ├── hooks/           # Custom React hooks
+│   └── contexts/        # React contexts (Socket.io)
+├── .env.local           # Environment variables (create this)
+└── package.json         # Dependencies and scripts
+```
+
+## Available scripts
+
+The project includes these npm scripts:
+
+<CodeGroup>
+  ```bash Development
+  npm run dev
+  # Starts the development server on http://localhost:3000
+  ```
+
+  ```bash Build
+  npm run build
+  # Creates an optimized production build
+  ```
+
+  ```bash Start
+  npm run start
+  # Starts the production server (run build first)
+  ```
+
+  ```bash Lint
+  npm run lint
+  # Runs ESLint to check for code issues
+  ```
+</CodeGroup>
+
+## Verify installation
+
+Once the development server is running, verify these features:
+
+<Steps>
+  <Step title="Check the homepage">
+    Navigate to `http://localhost:3000` and ensure:
+    - Particle background animates smoothly
+    - Hero section loads with proper styling
+    - Smooth scroll functionality works
+  </Step>
+
+  <Step title="Test navigation">
+    - Click through navigation menu items
+    - Verify smooth scrolling to sections
+    - Check responsive menu on mobile
+  </Step>
+
+  <Step title="Test 3D elements">
+    - Skills section should load the 3D keyboard
+    - Hover over keycaps to see skill details
+    - Verify smooth 3D interactions
+  </Step>
+
+  <Step title="Test theme toggle">
+    - Switch between light and dark modes
+    - Verify particle effects adjust accordingly
+    - Check all sections maintain proper contrast
+  </Step>
+</Steps>
+
+## Troubleshooting
+
+### Port already in use
+
+If port 3000 is already in use:
+
+```bash
+# Use a different port
+PORT=3001 npm run dev
+```
+
+### Module not found errors
+
+If you see module errors:
+
+```bash
+# Clear node_modules and reinstall
+rm -rf node_modules package-lock.json
+npm install
+```
+
+### TypeScript errors
+
+For TypeScript type errors:
+
+```bash
+# Restart the TypeScript server in your editor
+# Or run the type checker
+npx tsc --noEmit
+```
+
+### 3D models not loading
+
+If Spline 3D models fail to load:
+
+1. Check your internet connection (models load from Spline CDN)
+2. Verify browser supports WebGL
+3. Try clearing browser cache
+
+<Warning>
+  The 3D keyboard requires WebGL support. Older browsers or devices may not render 3D elements properly.
+</Warning>
+
+## Next steps
+
+Now that installation is complete:
+
+<CardGroup cols={2}>
+  <Card title="Configuration" icon="gear" href="/customization/configuration">
+    Customize your portfolio with personal information
+  </Card>
+  <Card title="Customization" icon="palette" href="/customization/theming">
+    Modify styles, colors, and components
+  </Card>
+  <Card title="Deployment" icon="rocket" href="/deployment/vercel">
+    Deploy your portfolio to production
+  </Card>
+  <Card title="Components" icon="cube" href="/components/overview">
+    Learn about available UI components
+  </Card>
+</CardGroup>

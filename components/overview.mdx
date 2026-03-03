@@ -1,0 +1,119 @@
+---
+title: Components overview
+description: Explore the component architecture of the 3D Interactive Portfolio
+---
+
+The portfolio is built with a modular component architecture using React, TypeScript, and modern animation libraries. Components are organized into three main categories: UI components, sections, and utility components.
+
+## Component structure
+
+The codebase follows a clear organizational pattern:
+
+```
+src/components/
+├── ui/              # Reusable UI components
+├── sections/        # Page sections (Hero, Skills, Projects, Contact)
+├── header/          # Navigation and menu components
+├── footer/          # Footer component
+└── ...             # Utility components (Particles, Preloader, etc.)
+```
+
+## Core technologies
+
+Components leverage several key libraries:
+
+- **React** - Component framework
+- **TypeScript** - Type safety and interfaces
+- **Framer Motion** - Animations and transitions
+- **Radix UI** - Accessible component primitives
+- **Tailwind CSS** - Styling with utility classes
+
+## Component categories
+
+<CardGroup cols={2}>
+  <Card title="UI components" icon="layer-group" href="/components/ui-components">
+    Reusable building blocks including buttons, cards, modals, and form inputs
+  </Card>
+  
+  <Card title="Sections" icon="puzzle-piece" href="/components/sections">
+    Page sections like Hero, Skills, Projects, and Contact that compose the main layout
+  </Card>
+  
+  <Card title="Animations" icon="wand-magic-sparkles" href="/components/animations">
+    Animation components and utilities for reveal effects and transitions
+  </Card>
+  
+  <Card title="Layout components" icon="table-columns">
+    Header, Footer, and other structural components
+  </Card>
+</CardGroup>
+
+## Common patterns
+
+### TypeScript interfaces
+
+Components use TypeScript interfaces for prop typing:
+
+```typescript
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link'
+  size?: 'default' | 'sm' | 'lg' | 'icon'
+  asChild?: boolean
+}
+```
+
+### Forwarded refs
+
+Components use `forwardRef` for DOM access:
+
+```typescript
+const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, ...props }, ref) => {
+    // Component implementation
+  }
+)
+```
+
+### Utility function
+
+The `cn()` utility merges Tailwind classes:
+
+```typescript
+import { cn } from "@/lib/utils"
+
+<div className={cn("base-classes", className)} />
+```
+
+## Animation approach
+
+Components use Framer Motion for declarative animations:
+
+```typescript
+<motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.5 }}
+>
+  Content
+</motion.div>
+```
+
+## Context providers
+
+Several components use React Context for state management:
+
+- `PreloaderContext` - Loading state
+- `ModalContext` - Modal open/close state
+- `TooltipProvider` - Tooltip configuration
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="UI components" icon="layer-group" href="/components/ui-components">
+    Explore the UI component library
+  </Card>
+  
+  <Card title="Sections" icon="puzzle-piece" href="/components/sections">
+    Learn about page sections
+  </Card>
+</CardGroup>

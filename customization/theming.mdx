@@ -1,0 +1,191 @@
+---
+title: Theming
+description: Customize colors, dark mode, and visual styling using CSS variables and Tailwind configuration
+---
+
+The portfolio supports comprehensive theming with built-in dark mode and customizable color schemes through CSS variables and Tailwind configuration.
+
+## CSS variables
+
+All theme colors are defined as CSS variables in `src/app/globals.css`. This approach allows for easy customization and dynamic theme switching.
+
+### Light mode variables
+
+```css
+:root {
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+  --primary: 222.2 47.4% 11.2%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 210 40% 96.1%;
+  --secondary-foreground: 222.2 47.4% 11.2%;
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --accent: 210 40% 96.1%;
+  --accent-foreground: 222.2 47.4% 11.2%;
+  --destructive: 0 84.2% 60.2%;
+  --border: 214.3 31.8% 91.4%;
+  --radius: 0.5rem;
+  --brand: hsl(20, 100%, 70%);
+}
+```
+
+### Dark mode variables
+
+```css
+.dark {
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+  --card: 222.2 84% 4.9%;
+  --card-foreground: 210 40% 98%;
+  --primary: 210 40% 98%;
+  --primary-foreground: 222.2 47.4% 11.2%;
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --accent: 217.2 32.6% 17.5%;
+  --destructive: 0 62.8% 30.6%;
+  --border: 217.2 32.6% 17.5%;
+}
+```
+
+## Color system
+
+The theme uses HSL (Hue, Saturation, Lightness) color values for maximum flexibility. Each variable follows the format: `H S% L%` without the `hsl()` wrapper.
+
+### Core color variables
+
+- `--background`: Main page background
+- `--foreground`: Primary text color
+- `--card`: Card component backgrounds
+- `--primary`: Primary action colors (buttons, links)
+- `--secondary`: Secondary UI elements
+- `--muted`: Subtle backgrounds and disabled states
+- `--accent`: Highlighted elements
+- `--destructive`: Error and warning states
+- `--border`: Border colors
+- `--brand`: Your brand color (custom)
+
+## Customizing colors
+
+To customize the theme colors, edit the CSS variables in `src/app/globals.css`:
+
+```css
+:root {
+  /* Change the brand color */
+  --brand: hsl(200, 100%, 60%); /* Blue brand */
+  
+  /* Adjust primary color */
+  --primary: 200 80% 40%;
+  
+  /* Modify background */
+  --background: 0 0% 98%;
+}
+```
+
+## Tailwind integration
+
+The CSS variables are mapped to Tailwind utilities in `tailwind.config.ts`:
+
+```typescript
+theme: {
+  extend: {
+    colors: {
+      border: "hsl(var(--border))",
+      background: "hsl(var(--background))",
+      foreground: "hsl(var(--foreground))",
+      brand: "var(--brand)",
+      primary: {
+        DEFAULT: "hsl(var(--primary))",
+        foreground: "hsl(var(--primary-foreground))",
+      },
+      secondary: {
+        DEFAULT: "hsl(var(--secondary))",
+        foreground: "hsl(var(--secondary-foreground))",
+      },
+      // ... more color mappings
+    },
+  },
+}
+```
+
+### Using theme colors in components
+
+```tsx
+// Use Tailwind classes
+<div className="bg-background text-foreground">
+  <button className="bg-primary text-primary-foreground">
+    Primary Button
+  </button>
+  <span className="text-brand">Brand Color</span>
+</div>
+```
+
+## Dark mode
+
+Dark mode is configured using Tailwind's class-based dark mode:
+
+```typescript
+const config = {
+  darkMode: ["class"],
+  // ...
+};
+```
+
+The `.dark` class is applied to the root element to toggle dark mode. All CSS variables automatically switch when this class is present.
+
+## Border radius
+
+Customize border radius throughout the application:
+
+```css
+:root {
+  --radius: 0.5rem; /* Default */
+}
+```
+
+Tailwind utilities are generated based on this value:
+
+```typescript
+borderRadius: {
+  lg: "var(--radius)",
+  md: "calc(var(--radius) - 2px)",
+  sm: "calc(var(--radius) - 4px)",
+}
+```
+
+## Chart colors
+
+The theme includes chart color variables for data visualization:
+
+```css
+:root {
+  --chart-1: 12 76% 61%;
+  --chart-2: 173 58% 39%;
+  --chart-3: 197 37% 24%;
+  --chart-4: 43 74% 66%;
+  --chart-5: 27 87% 67%;
+}
+```
+
+## Theme disclaimers
+
+The portfolio includes playful theme switching messages defined in `src/data/constants.ts`:
+
+```typescript
+export const themeDisclaimers = {
+  light: [
+    "Warning: Light mode emits a gazillion lumens of pure radiance!",
+    "Caution: Light mode ahead! Please don't try this at home.",
+  ],
+  dark: [
+    "Welcome back to the dark side!",
+    "Dark mode activated! Thanks from the bottom of my heart.",
+  ],
+};
+```
+
+Customize these messages to match your personality and brand voice.

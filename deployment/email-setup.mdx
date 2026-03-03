@@ -1,0 +1,176 @@
+---
+title: Email setup with Resend
+description: Configure Resend for contact form email functionality in your portfolio
+---
+
+The portfolio uses [Resend](https://resend.com) to handle contact form submissions. This guide will help you set up Resend and configure it for your portfolio.
+
+## Why Resend?
+
+Resend is a modern email API that offers:
+
+- Simple integration with React email templates
+- Reliable delivery with high inbox placement
+- Generous free tier (100 emails/day)
+- Easy setup with minimal configuration
+
+## Getting started with Resend
+
+<Steps>
+  <Step title="Create a Resend account">
+    1. Go to [resend.com](https://resend.com)
+    2. Click "Sign Up" and create an account
+    3. Verify your email address
+  </Step>
+
+  <Step title="Generate an API key">
+    1. Navigate to the [API Keys](https://resend.com/api-keys) section in your Resend dashboard
+    2. Click "Create API Key"
+    3. Give your API key a name (e.g., "Portfolio Contact Form")
+    4. Select the appropriate permissions ("Sending access" is sufficient)
+    5. Click "Add" to generate the key
+    6. **Copy the API key immediately** - you won't be able to see it again
+  </Step>
+
+  <Step title="Add API key to your project">
+    **For local development:**
+    
+    Add the API key to your `.env.local` file:
+    
+    ```bash
+    RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxx
+    ```
+    
+    **For Vercel deployment:**
+    
+    1. Go to your Vercel project settings
+    2. Navigate to "Environment Variables"
+    3. Add `RESEND_API_KEY` with your API key as the value
+    4. Save and redeploy your application
+  </Step>
+
+  <Step title="Test the contact form">
+    1. Start your development server: `npm run dev`
+    2. Navigate to your portfolio's contact section
+    3. Fill out and submit the contact form
+    4. Check your configured email address for the message
+  </Step>
+</Steps>
+
+## How the contact form works
+
+The contact form implementation uses the following flow:
+
+1. **User submits form** - User fills out name, email, and message fields
+2. **Validation** - Form data is validated using Zod schema (`src/app/api/send/route.ts:8-12`)
+3. **Email sent** - Resend API sends the email to your configured address
+4. **Confirmation** - User receives feedback about the submission status
+
+### Email configuration
+
+The email is configured in `src/app/api/send/route.ts:25-34`:
+
+```typescript
+await resend.emails.send({
+  from: "Porfolio <onboarding@resend.dev>",
+  to: [config.email],
+  subject: "Contact me from portfolio",
+  react: EmailTemplate({
+    fullName: zodData.fullName,
+    email: zodData.email,
+    message: zodData.message,
+  }),
+});
+```
+
+### Validation rules
+
+The contact form validates:
+
+- **Full name**: Minimum 2 characters
+- **Email**: Valid email format
+- **Message**: Minimum 10 characters
+
+## Customizing email settings
+
+### Change recipient email
+
+The recipient email is configured in your config file. Update `config.email` to change where contact form submissions are sent.
+
+### Customize email template
+
+The email template is located at `src/components/email-template`. You can customize:
+
+- Layout and styling
+- Content structure
+- Branding elements
+
+### Update sender address
+
+To use a custom sender address instead of `onboarding@resend.dev`:
+
+<Steps>
+  <Step title="Verify your domain">
+    1. Go to [Domains](https://resend.com/domains) in Resend dashboard
+    2. Click "Add Domain"
+    3. Enter your domain name
+    4. Add the provided DNS records to your domain registrar
+    5. Wait for verification (usually a few minutes)
+  </Step>
+
+  <Step title="Update sender in code">
+    Modify the `from` field in `src/app/api/send/route.ts`:
+    
+    ```typescript
+    from: "Your Name <noreply@yourdomain.com>"
+    ```
+  </Step>
+</Steps>
+
+<Note>
+  Using a verified domain improves email deliverability and allows you to send from a custom email address.
+</Note>
+
+## Resend free tier limits
+
+Resend's free tier includes:
+
+- **100 emails per day**
+- **3,000 emails per month**
+- Access to all features
+- Email validation
+
+For most personal portfolios, the free tier is sufficient. If you need more capacity, check Resend's [pricing page](https://resend.com/pricing).
+
+## Troubleshooting
+
+### Emails not sending
+
+1. **Check API key**: Ensure `RESEND_API_KEY` is set correctly in environment variables
+2. **Verify API key permissions**: Make sure the key has "Sending access" enabled
+3. **Check rate limits**: Verify you haven't exceeded the free tier limits
+4. **Review logs**: Check the browser console and server logs for error messages
+
+### Emails going to spam
+
+1. **Verify domain**: Use a verified domain instead of `onboarding@resend.dev`
+2. **Add SPF/DKIM records**: Ensure DNS records are properly configured
+3. **Test deliverability**: Use Resend's deliverability tools to check inbox placement
+
+### API key errors
+
+```json
+{ "error": "Missing API key" }
+```
+
+This error means the `RESEND_API_KEY` environment variable is not set:
+
+1. Check that `.env.local` exists and contains the API key
+2. Restart your development server after adding the variable
+3. For production, verify the environment variable is set in Vercel
+
+## Next steps
+
+- Configure [environment variables](/deployment/environment-variables) for other services
+- Deploy your portfolio to [Vercel](/deployment/vercel)
+- Customize the email template to match your branding

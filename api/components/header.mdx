@@ -1,0 +1,75 @@
+---
+title: Header
+description: Animated header component with navigation menu and theme toggle
+---
+
+The Header component provides an animated navigation header with a collapsible menu, theme toggle, and online users indicator. It features smooth animations using Framer Motion and supports delayed rendering for integration with preloader.
+
+## Props
+
+<ParamField path="loader" type="boolean" default="false">
+  When true, delays the header animation by 3.5 seconds to sync with the preloader. When false, the header animates in immediately.
+</ParamField>
+
+## Usage
+
+```tsx
+import Header from "@/components/header/header";
+
+export default function Layout() {
+  return (
+    <>
+      <Header loader={true} />
+      {/* Rest of your layout */}
+    </>
+  );
+}
+```
+
+### Without preloader
+
+```tsx
+import Header from "@/components/header/header";
+
+export default function SimplePage() {
+  return (
+    <>
+      <Header />
+      {/* Page content */}
+    </>
+  );
+}
+```
+
+## Features
+
+- **Animated entrance**: Slides down from top with configurable delay
+- **Collapsible navigation**: Menu expands/collapses with smooth transitions
+- **Theme toggle**: Integrated theme switcher with custom toggle component
+- **Online users**: Real-time display of active users
+- **Dynamic background**: Background opacity changes when menu is active
+
+## Component structure
+
+The Header component includes:
+
+- Author/brand link from config
+- Online users indicator
+- Theme toggle button
+- Menu toggle button with animated text (Menu/Close)
+- Collapsible navigation overlay
+
+## Animation behavior
+
+The header animates from `y: -80` to `y: 0` with:
+- Delay: 3.5 seconds when `loader={true}`, 0 seconds otherwise
+- Duration: 0.8 seconds
+- Background transitions with 500ms duration
+
+## Dependencies
+
+- `framer-motion` for animations
+- `next/link` for navigation
+- Custom Nav component for menu content
+- FunnyThemeToggle for theme switching
+- OnlineUsers for real-time user count

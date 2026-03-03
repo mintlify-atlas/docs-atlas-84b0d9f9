@@ -1,0 +1,107 @@
+---
+title: Deploy to Vercel
+description: Learn how to deploy your 3D interactive portfolio to Vercel for blazing-fast performance
+---
+
+This guide will walk you through deploying your 3D interactive portfolio to Vercel, a platform optimized for Next.js applications.
+
+## Prerequisites
+
+Before deploying to Vercel, ensure you have:
+
+- A GitHub, GitLab, or Bitbucket account with your portfolio code pushed to a repository
+- A [Vercel account](https://vercel.com/signup) (free tier available)
+- All required environment variables ready (see [Environment variables](/deployment/environment-variables))
+
+## Deploy from Git repository
+
+<Steps>
+  <Step title="Import your project">
+    1. Go to [Vercel's dashboard](https://vercel.com/dashboard)
+    2. Click "Add New..." and select "Project"
+    3. Import your Git repository containing the portfolio code
+  </Step>
+
+  <Step title="Configure project settings">
+    Vercel will automatically detect that you're using Next.js. The default settings should work:
+    
+    - **Framework Preset**: Next.js
+    - **Build Command**: `npm run build`
+    - **Output Directory**: `.next`
+    - **Install Command**: `npm install`
+  </Step>
+
+  <Step title="Add environment variables">
+    Before deploying, add your environment variables in the "Environment Variables" section:
+    
+    - `RESEND_API_KEY` - Your Resend API key for email functionality
+    - `NEXT_PUBLIC_WS_URL` - WebSocket URL for real-time features (optional)
+    - `UMAMI_DOMAIN` - Umami analytics domain (optional)
+    - `UMAMI_SITE_ID` - Umami site ID (optional)
+    
+    See [Environment variables](/deployment/environment-variables) for detailed configuration.
+  </Step>
+
+  <Step title="Deploy">
+    Click "Deploy" and Vercel will build and deploy your portfolio. This typically takes 2-3 minutes.
+  </Step>
+
+  <Step title="View your live site">
+    Once deployment is complete, Vercel will provide you with a live URL (e.g., `your-portfolio.vercel.app`). You can also configure a custom domain in the project settings.
+  </Step>
+</Steps>
+
+## Automatic deployments
+
+Vercel automatically deploys your portfolio when you push changes to your repository:
+
+- **Production deployments**: Triggered by pushes to your main/master branch
+- **Preview deployments**: Created for pull requests and other branches
+
+Every deployment gets a unique URL for testing before going live.
+
+## Custom domain setup
+
+To use a custom domain with your Vercel deployment:
+
+<Steps>
+  <Step title="Add domain">
+    1. Go to your project settings in Vercel
+    2. Navigate to the "Domains" section
+    3. Enter your custom domain (e.g., `www.yourdomain.com`)
+  </Step>
+
+  <Step title="Configure DNS">
+    Add the DNS records provided by Vercel to your domain registrar:
+    
+    - For apex domains: Add an A record
+    - For subdomains: Add a CNAME record
+  </Step>
+
+  <Step title="Verify domain">
+    Vercel will automatically verify your domain once DNS propagates (this can take up to 48 hours).
+  </Step>
+</Steps>
+
+## Performance optimization
+
+Vercel provides several optimizations out of the box:
+
+- **Edge Network**: Global CDN for fast content delivery
+- **Automatic HTTPS**: SSL certificates are provisioned automatically
+- **Image Optimization**: Next.js Image component is optimized automatically
+- **Serverless Functions**: API routes are deployed as serverless functions
+
+## Troubleshooting
+
+If your deployment fails, check the deployment logs in Vercel's dashboard:
+
+1. Go to your project's "Deployments" tab
+2. Click on the failed deployment
+3. Review the build logs for error messages
+
+Common issues:
+
+- **Missing environment variables**: Ensure all required variables are set
+- **Build errors**: Check that the project builds successfully locally with `npm run build`
+- **Dependency issues**: Verify all dependencies are listed in `package.json`

@@ -1,0 +1,378 @@
+---
+title: Particles background
+description: Interactive particle system with mouse-responsive movement and dynamic behavior
+---
+
+The portfolio features an elegant particle background that responds to mouse movement, creating an immersive and interactive experience. Particles are drawn on a canvas and react to the cursor position with magnetic-like behavior.
+
+## Technology stack
+
+The particle system is built with:
+
+- **HTML5 Canvas API** - High-performance rendering
+- **React hooks** - State and effect management
+- **Custom mouse tracking** - Precise cursor position detection
+
+## Component implementation
+
+The particle component is located at `src/components/Particles.tsx`:
+
+```tsx Particles.tsx
+import React, { useRef, useEffect, useState } from "react";
+import { useMousePosition } from "@/utils/mouse";
+
+interface ParticlesProps {
+  className?: string;
+  quantity?: number;
+  staticity?: number;
+  ease?: number;
+  refresh?: boolean;
+}
+
+export default function Particles({
+  className = "",
+  quantity = 30,
+  staticity = 50,
+  ease = 50,
+  refresh = false,
+}: ParticlesProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasContainerRef = useRef<HTMLDivElement>(null);
+  const context = useRef<CanvasRenderingContext2D | null>(null);
+  const circles = useRef<any[]>([]);
+  const mousePosition = useMousePosition();
+  const mouse = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const canvasSize = useRef<{ w: number; h: number }>({ w: 0, h: 0 });
+  const dpr = typeof window !== "undefined" ? window.devicePixelRatio : 1;
+
+  return (
+    <div
+      className={className}
+      ref={canvasContainerRef}
+      aria-hidden="true"
+    >
+      <canvas ref={canvasRef} />
+    </div>
+  );
+}
+```
+
+## Configuration props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `className` | `string` | `""` | CSS classes for the container |
+| `quantity` | `number` | `30` | Number of particles to render |
+| `staticity` | `number` | `50` | Controls how static particles are (higher = less movement) |
+| `ease` | `number` | `50` | Smoothness of particle movement |
+| `refresh` | `boolean` | `false` | Triggers particle regeneration |
+
+## Particle physics
+
+Each particle is defined with physical properties:
+
+```typescript Particles.tsx
+type Circle = {
+  x: number;              // X position
+  y: number;              // Y position
+  translateX: number;     // X translation from mouse
+  translateY: number;     // Y translation from mouse
+  size: number;           // Particle size
+  alpha: number;          // Current opacity
+  targetAlpha: number;    // Target opacity
+  dx: number;             // X velocity
+  dy: number;             // Y velocity
+  magnetism: number;      // Mouse attraction strength
+};
+```
+
+## Particle generation
+
+Particles are created with randomized properties:
+
+```typescript Particles.tsx
+const circleParams = (): Circle => {
+  const x = Math.floor(Math.random() * canvasSize.current.w);
+  const y = Math.floor(Math.random() * canvasSize.current.h);
+  const translateX = 0;
+  const translateY = 0;
+  const size = Math.floor(Math.random() * 2) + 0.1;
+  const alpha = 0;
+  const targetAlpha = parseFloat((Math.random() * 0.6 + 0.1).toFixed(1));
+  const dx = (Math.random() - 0.5) * 0.2;
+  const dy = (Math.random() - 0.5) * 0.2;
+  const magnetism = 0.1 + Math.random() * 4;
+  
+  return {
+    x,
+    y,
+    translateX,
+    translateY,
+    size,
+    alpha,
+    targetAlpha,
+    dx,
+    dy,
+    magnetism,
+  };
+};
+```
+
+## Canvas initialization
+
+The canvas is set up with proper scaling for high-DPI displays:
+
+```typescript Particles.tsx
+const resizeCanvas = () => {
+  if (canvasContainerRef.current && canvasRef.current && context.current) {
+    circles.current.length = 0;
+    canvasSize.current.w = canvasContainerRef.current.offsetWidth;
+    canvasSize.current.h = canvasContainerRef.current.offsetHeight;
+    canvasRef.current.width = canvasSize.current.w * dpr;
+    canvasRef.current.height = canvasSize.current.h * dpr;
+    canvasRef.current.style.width = `${canvasSize.current.w}px`;
+    canvasRef.current.style.height = `${canvasSize.current.h}px`;
+    context.current.scale(dpr, dpr);
+  }
+};
+```
+
+## Mouse interaction
+
+Particles respond to mouse movement with magnetic attraction:
+
+```typescript Particles.tsx
+const onMouseMove = () => {
+  if (canvasRef.current) {
+    const rect = canvasRef.current.getBoundingClientRect();
+    const { w, h } = canvasSize.current;
+    const x = mousePosition.x - rect.left - w / 2;
+    const y = mousePosition.y - rect.top - h / 2;
+    const inside = x < w / 2 && x > -w / 2 && y < h / 2 && y > -h / 2;
+    if (inside) {
+      mouse.current.x = x;
+      mouse.current.y = y;
+    }
+  }
+};
+
+useEffect(() => {
+  onMouseMove();
+}, [mousePosition.x, mousePosition.y]);
+```
+
+## Animation loop
+
+The animation system runs at 60fps using `requestAnimationFrame`:
+
+```typescript Particles.tsx
+const animate = () => {
+  clearContext();
+  circles.current.forEach((circle: Circle, i: number) => {
+    // Update alpha based on distance from edges
+    const edge = [
+      circle.x + circle.translateX - circle.size,
+      canvasSize.current.w - circle.x - circle.translateX - circle.size,
+      circle.y + circle.translateY - circle.size,
+      canvasSize.current.h - circle.y - circle.translateY - circle.size,
+    ];
+    const closestEdge = edge.reduce((a, b) => Math.min(a, b));
+    const remapClosestEdge = parseFloat(
+      remapValue(closestEdge, 0, 20, 0, 1).toFixed(2)
+    );
+    
+    if (remapClosestEdge > 1) {
+      circle.alpha += 0.02;
+      if (circle.alpha > circle.targetAlpha) {
+        circle.alpha = circle.targetAlpha;
+      }
+    } else {
+      circle.alpha = circle.targetAlpha * remapClosestEdge;
+    }
+    
+    // Update position
+    circle.x += circle.dx;
+    circle.y += circle.dy;
+    
+    // Apply mouse magnetism
+    circle.translateX +=
+      (mouse.current.x / (staticity / circle.magnetism) - circle.translateX) /
+      ease;
+    circle.translateY +=
+      (mouse.current.y / (staticity / circle.magnetism) - circle.translateY) /
+      ease;
+    
+    // Regenerate particles that leave the canvas
+    if (
+      circle.x < -circle.size ||
+      circle.x > canvasSize.current.w + circle.size ||
+      circle.y < -circle.size ||
+      circle.y > canvasSize.current.h + circle.size
+    ) {
+      circles.current.splice(i, 1);
+      const newCircle = circleParams();
+      drawCircle(newCircle);
+    } else {
+      drawCircle(
+        {
+          ...circle,
+          x: circle.x,
+          y: circle.y,
+          translateX: circle.translateX,
+          translateY: circle.translateY,
+          alpha: circle.alpha,
+        },
+        true
+      );
+    }
+  });
+  window.requestAnimationFrame(animate);
+};
+```
+
+## Drawing particles
+
+Particles are rendered as circles with dynamic opacity:
+
+```typescript Particles.tsx
+const drawCircle = (circle: Circle, update = false) => {
+  if (context.current) {
+    const { x, y, translateX, translateY, size, alpha } = circle;
+    context.current.translate(translateX, translateY);
+    context.current.beginPath();
+    context.current.arc(x, y, size, 0, 2 * Math.PI);
+    context.current.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+    context.current.fill();
+    context.current.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    if (!update) {
+      circles.current.push(circle);
+    }
+  }
+};
+```
+
+## Usage example
+
+```tsx
+import Particles from "@/components/Particles";
+
+export default function HeroSection() {
+  return (
+    <div className="relative h-screen">
+      <Particles
+        className="absolute inset-0 -z-10"
+        quantity={50}
+        staticity={30}
+        ease={60}
+      />
+      <div className="relative z-10">
+        <h1>Your Content Here</h1>
+      </div>
+    </div>
+  );
+}
+```
+
+## Styling with Tailwind
+
+The particle system includes a gradient background for depth:
+
+```tsx Particles.tsx
+<div
+  className="dark:bg-gradient-to-tl from-black via-zinc-600/20 to-black"
+  ref={canvasContainerRef}
+  aria-hidden="true"
+>
+  <canvas ref={canvasRef} />
+</div>
+```
+
+## Performance optimization
+
+### High-DPI display support
+
+The system automatically detects and scales for retina displays:
+
+```typescript
+const dpr = typeof window !== "undefined" ? window.devicePixelRatio : 1;
+canvasRef.current.width = canvasSize.current.w * dpr;
+canvasRef.current.height = canvasSize.current.h * dpr;
+```
+
+### Edge fade-out
+
+Particles fade near canvas edges for a seamless look:
+
+```typescript
+const remapValue = (
+  value: number,
+  start1: number,
+  end1: number,
+  start2: number,
+  end2: number
+): number => {
+  const remapped =
+    ((value - start1) * (end2 - start2)) / (end1 - start1) + start2;
+  return remapped > 0 ? remapped : 0;
+};
+```
+
+### Automatic cleanup
+
+Event listeners are properly removed on unmount:
+
+```typescript
+useEffect(() => {
+  if (canvasRef.current) {
+    context.current = canvasRef.current.getContext("2d");
+  }
+  initCanvas();
+  animate();
+  window.addEventListener("resize", initCanvas);
+
+  return () => {
+    window.removeEventListener("resize", initCanvas);
+  };
+}, []);
+```
+
+## Customization examples
+
+### Dense particle field
+
+```tsx
+<Particles
+  quantity={100}
+  staticity={20}
+  ease={70}
+/>
+```
+
+### Slow, drifting particles
+
+```tsx
+<Particles
+  quantity={20}
+  staticity={80}
+  ease={30}
+/>
+```
+
+### Highly responsive
+
+```tsx
+<Particles
+  quantity={40}
+  staticity={10}
+  ease={80}
+/>
+```
+
+<Warning>
+Using very high particle quantities (>150) may impact performance on lower-end devices. Test on target hardware.
+</Warning>
+
+<Tip>
+Adjust the `staticity` and `ease` values together - lower staticity with higher ease creates smooth, flowing movement.
+</Tip>

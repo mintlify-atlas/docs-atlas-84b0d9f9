@@ -1,0 +1,383 @@
+---
+title: Smooth animations
+description: Reveal animations powered by Framer Motion for elegant UI transitions
+---
+
+The portfolio uses Framer Motion to create smooth, elegant animations throughout the interface. These animations enhance the user experience with subtle motion that feels natural and polished.
+
+## Technology stack
+
+```json package.json
+{
+  "dependencies": {
+    "framer-motion": "^11.3.17"
+  }
+}
+```
+
+## Reveal animation components
+
+The portfolio includes two main reveal animation components located in `src/components/reveal-animations.tsx`:
+
+### BlurIn component
+
+Creates a blur-to-focus effect with fade-in animation:
+
+```tsx reveal-animations.tsx
+import { motion } from "framer-motion";
+import { ReactNode } from "react";
+
+interface BlurIntProps {
+  children: ReactNode;
+  className?: string;
+  delay?: number;
+  variant?: {
+    hidden: { filter: string; opacity: number };
+    visible: { filter: string; opacity: number };
+  };
+  duration?: number;
+}
+
+export const BlurIn = ({
+  children,
+  className,
+  variant,
+  delay = 0,
+  duration = 1,
+}: BlurIntProps) => {
+  const defaultVariants = {
+    hidden: { filter: "blur(10px)", opacity: 0 },
+    visible: { filter: "blur(0px)", opacity: 1 },
+  };
+  const combinedVariants = variant || defaultVariants;
+
+  return (
+    <motion.h1
+      initial="hidden"
+      animate="visible"
+      transition={{ duration, delay }}
+      variants={combinedVariants}
+      className={className}
+    >
+      {children}
+    </motion.h1>
+  );
+};
+```
+
+### BoxReveal component
+
+Creates a sliding box reveal effect with viewport detection:
+
+```tsx reveal-animations.tsx
+import { motion, useAnimation, useInView } from "framer-motion";
+import { useEffect, useRef } from "react";
+
+interface BoxRevealProps {
+  children: JSX.Element;
+  width?: "fit-content" | "100%";
+  boxColor?: string;
+  duration?: number;
+  delay?: number;
+  once?: boolean;
+}
+
+export const BoxReveal = ({
+  children,
+  width = "fit-content",
+  boxColor,
+  duration,
+  delay,
+  once = true,
+}: BoxRevealProps) => {
+  const mainControls = useAnimation();
+  const slideControls = useAnimation();
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once });
+
+  useEffect(() => {
+    if (isInView) {
+      slideControls.start("visible");
+      mainControls.start("visible");
+    } else {
+      slideControls.start("hidden");
+      mainControls.start("hidden");
+    }
+  }, [isInView, mainControls, slideControls]);
+
+  return (
+    <div ref={ref} style={{ position: "relative", width, overflow: "hidden" }}>
+      <motion.div
+        variants={{
+          hidden: { opacity: 0, y: 75 },
+          visible: { opacity: 1, y: 0 },
+        }}
+        initial="hidden"
+        animate={mainControls}
+        transition={{ duration: duration ? duration : 0.5, delay }}
+      >
+        {children}
+      </motion.div>
+
+      <motion.div
+        variants={{
+          hidden: { left: 0 },
+          visible: { left: "100%" },
+        }}
+        initial="hidden"
+        animate={slideControls}
+        transition={{
+          duration: duration ? duration : 0.5,
+          ease: "easeIn",
+          delay,
+        }}
+        style={{
+          position: "absolute",
+          top: 4,
+          bottom: 4,
+          left: 0,
+          right: 0,
+          zIndex: 20,
+          background: boxColor ? boxColor : "#ffffff00",
+        }}
+      />
+    </div>
+  );
+};
+```
+
+## Usage examples
+
+### BlurIn animation
+
+Perfect for hero headings and important text:
+
+```tsx
+import { BlurIn } from "@/components/reveal-animations";
+
+export default function HeroSection() {
+  return (
+    <BlurIn 
+      duration={1.5} 
+      delay={0.2}
+      className="text-5xl font-bold"
+    >
+      Welcome to My Portfolio
+    </BlurIn>
+  );
+}
+```
+
+### Custom blur variants
+
+```tsx
+<BlurIn
+  variant={{
+    hidden: { filter: "blur(20px)", opacity: 0 },
+    visible: { filter: "blur(0px)", opacity: 1 },
+  }}
+  duration={2}
+>
+  Heavy blur effect
+</BlurIn>
+```
+
+### BoxReveal animation
+
+Ideal for content sections that appear on scroll:
+
+```tsx
+import { BoxReveal } from "@/components/reveal-animations";
+
+export default function AboutSection() {
+  return (
+    <div className="space-y-4">
+      <BoxReveal duration={0.5} delay={0}>
+        <h2 className="text-3xl font-bold">About Me</h2>
+      </BoxReveal>
+      
+      <BoxReveal duration={0.5} delay={0.2}>
+        <p className="text-lg">
+          I'm a developer passionate about creating beautiful experiences.
+        </p>
+      </BoxReveal>
+      
+      <BoxReveal duration={0.5} delay={0.4} boxColor="#3b82f6">
+        <button className="px-6 py-3 bg-blue-500 text-white rounded-lg">
+          Learn More
+        </button>
+      </BoxReveal>
+    </div>
+  );
+}
+```
+
+## Staggered animations
+
+Create sequential reveals for lists of items:
+
+```tsx
+import { motion } from "framer-motion";
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.04,
+    },
+  },
+};
+
+const item = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1 },
+};
+
+export default function ItemList({ items }) {
+  return (
+    <motion.ul
+      variants={container}
+      initial="hidden"
+      animate="show"
+      className="grid gap-4"
+    >
+      {items.map((item, i) => (
+        <motion.li key={i} variants={item}>
+          {item.name}
+        </motion.li>
+      ))}
+    </motion.ul>
+  );
+}
+```
+
+## Viewport-based animations
+
+The `BoxReveal` component uses `useInView` to trigger animations when elements enter the viewport:
+
+```typescript
+import { useInView } from "framer-motion";
+import { useRef } from "react";
+
+const ref = useRef(null);
+const isInView = useInView(ref, { once: true });
+
+// Animation triggers when element comes into view
+// once: true ensures animation only plays once
+```
+
+## Animation controls
+
+Framer Motion's `useAnimation` hook provides programmatic control:
+
+```typescript
+import { useAnimation } from "framer-motion";
+
+const mainControls = useAnimation();
+const slideControls = useAnimation();
+
+useEffect(() => {
+  if (isInView) {
+    slideControls.start("visible");
+    mainControls.start("visible");
+  }
+}, [isInView]);
+```
+
+## Best practices
+
+### Performance optimization
+
+- Use `once: true` for animations that should only play once
+- Avoid animating expensive properties like `width` and `height`
+- Prefer transforms and opacity for smooth 60fps animations
+
+### Accessibility
+
+```tsx
+<motion.div
+  initial={{ opacity: 0 }}
+  animate={{ opacity: 1 }}
+  // Respect user's motion preferences
+  transition={{
+    duration: 0.5,
+    ease: "easeOut",
+  }}
+>
+  Content
+</motion.div>
+```
+
+### Timing and easing
+
+```tsx
+// Quick, snappy animations for UI elements
+transition={{ duration: 0.2, ease: "easeOut" }}
+
+// Slower, more dramatic for hero sections
+transition={{ duration: 1.5, ease: "easeInOut" }}
+
+// Elastic bounce for playful effects
+transition={{ duration: 1, ease: "elastic.out(1, 0.6)" }}
+```
+
+## Common patterns
+
+### Fade and slide up
+
+```tsx
+<motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.5 }}
+>
+  Content slides up while fading in
+</motion.div>
+```
+
+### Scale and fade
+
+```tsx
+<motion.div
+  initial={{ opacity: 0, scale: 0.8 }}
+  animate={{ opacity: 1, scale: 1 }}
+  transition={{ duration: 0.5 }}
+>
+  Content scales up while fading in
+</motion.div>
+```
+
+### Sequential delays
+
+```tsx
+<div>
+  <motion.h1
+    initial={{ opacity: 0, y: -20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 0 }}
+  >
+    First
+  </motion.h1>
+  
+  <motion.p
+    initial={{ opacity: 0, y: -20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 0.2 }}
+  >
+    Second
+  </motion.p>
+  
+  <motion.button
+    initial={{ opacity: 0, y: -20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 0.4 }}
+  >
+    Third
+  </motion.button>
+</div>
+```
+
+<Tip>
+Combine `BlurIn` and `BoxReveal` for layered animation effects that create depth and visual hierarchy.
+</Tip>

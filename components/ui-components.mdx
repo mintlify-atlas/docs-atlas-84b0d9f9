@@ -1,0 +1,446 @@
+---
+title: UI components
+description: Reusable UI components for building the portfolio interface
+---
+
+The UI components directory contains building blocks for the portfolio interface. These components are styled with Tailwind CSS and use Framer Motion for animations.
+
+## Form components
+
+### Button
+
+A versatile button component with multiple variants and sizes.
+
+**Location:** `src/components/ui/button.tsx`
+
+**Props:**
+
+```typescript
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link'
+  size?: 'default' | 'sm' | 'lg' | 'icon'
+  asChild?: boolean
+}
+```
+
+**Usage:**
+
+```tsx
+import { Button } from "@/components/ui/button"
+
+<Button variant="default">Click me</Button>
+<Button variant="outline" size="sm">Small button</Button>
+<Button variant="ghost" size="icon"><Icon /></Button>
+```
+
+**Variants:**
+
+- `default` - Primary button with solid background
+- `destructive` - Red button for destructive actions
+- `outline` - Button with border and transparent background
+- `secondary` - Secondary button style
+- `ghost` - Transparent button
+- `link` - Text-only link style
+
+### Input
+
+Standard text input component.
+
+**Location:** `src/components/ui/input.tsx`
+
+**Props:**
+
+```typescript
+interface InputProps extends InputHTMLAttributes<HTMLInputElement> {}
+```
+
+**Usage:**
+
+```tsx
+import { Input } from "@/components/ui/input"
+
+<Input 
+  type="email" 
+  placeholder="you@example.com" 
+  required 
+/>
+```
+
+### Aceternity Input
+
+Enhanced input with animated border effects.
+
+**Location:** `src/components/ui/ace-input.tsx`
+
+**Usage:**
+
+```tsx
+import { Input } from "@/components/ui/ace-input"
+
+<Input 
+  id="fullname"
+  placeholder="Your Name"
+  type="text"
+  required
+/>
+```
+
+### Textarea
+
+Multi-line text input with animated hover effects.
+
+**Location:** `src/components/ui/ace-textarea.tsx`
+
+**Props:**
+
+```typescript
+interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {}
+```
+
+**Usage:**
+
+```tsx
+import { Textarea } from "@/components/ui/ace-textarea"
+
+<Textarea 
+  placeholder="Tell me about your project"
+  id="content"
+  required
+/>
+```
+
+**Features:**
+- Radial gradient hover effect
+- Follows mouse position
+- Configurable hover radius (default: 100px)
+
+### Label
+
+Form label component for accessibility.
+
+**Location:** `src/components/ui/label.tsx`
+
+**Usage:**
+
+```tsx
+import { Label } from "@/components/ui/label"
+
+<Label htmlFor="email">Email Address</Label>
+```
+
+## Layout components
+
+### Card
+
+Container component with header, content, and footer sections.
+
+**Location:** `src/components/ui/card.tsx`
+
+**Components:**
+
+```typescript
+- Card              // Main container
+- CardHeader        // Header section
+- CardTitle         // Title element
+- CardDescription   // Description text
+- CardContent       // Main content area
+- CardFooter        // Footer section
+```
+
+**Usage:**
+
+```tsx
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+
+<Card className="bg-white/70 dark:bg-black/70 backdrop-blur-sm">
+  <CardHeader>
+    <CardTitle>Contact Form</CardTitle>
+    <CardDescription>
+      Please contact me directly or drop your info here.
+    </CardDescription>
+  </CardHeader>
+  <CardContent>
+    {/* Form content */}
+  </CardContent>
+</Card>
+```
+
+**Example from codebase:** `src/components/sections/contact.tsx:31`
+
+## Interactive components
+
+### Animated Modal
+
+Full-featured modal with 3D animations and blur backdrop.
+
+**Location:** `src/components/ui/animated-modal.tsx`
+
+**Components:**
+
+```typescript
+- Modal          // Provider wrapper
+- ModalTrigger   // Button to open modal
+- ModalBody      // Modal container
+- ModalContent   // Content wrapper
+- ModalFooter    // Footer with actions
+```
+
+**Props:**
+
+```typescript
+// Modal - wraps entire modal implementation
+interface ModalProps {
+  children: ReactNode
+}
+
+// ModalTrigger - button that opens modal
+interface ModalTriggerProps {
+  children: ReactNode
+  className?: string
+}
+
+// ModalBody - modal container
+interface ModalBodyProps {
+  children: ReactNode
+  className?: string
+}
+```
+
+**Usage:**
+
+```tsx
+import {
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalTrigger,
+} from "@/components/ui/animated-modal"
+
+<Modal>
+  <ModalTrigger className="flex justify-center">
+    <div>Click to open</div>
+  </ModalTrigger>
+  <ModalBody>
+    <ModalContent>
+      <h4>Modal Title</h4>
+      <p>Modal content goes here</p>
+    </ModalContent>
+    <ModalFooter>
+      <button>Cancel</button>
+      <button>Confirm</button>
+    </ModalFooter>
+  </ModalBody>
+</Modal>
+```
+
+**Features:**
+- 3D perspective animations
+- Blur backdrop on open
+- Click outside to close
+- ESC key to close
+- Scroll area for long content
+
+**Example from codebase:** `src/components/sections/projects.tsx:43`
+
+### Floating Dock
+
+Animated dock component with magnification effect.
+
+**Location:** `src/components/ui/floating-dock.tsx`
+
+**Props:**
+
+```typescript
+interface FloatingDockProps {
+  items: { title: string; icon: React.ReactNode }[]
+  desktopClassName?: string
+  mobileClassName?: string
+}
+```
+
+**Usage:**
+
+```tsx
+import { FloatingDock } from "@/components/ui/floating-dock"
+
+const items = [
+  { title: "React", icon: <ReactIcon /> },
+  { title: "TypeScript", icon: <TSIcon /> },
+]
+
+<FloatingDock items={items} />
+```
+
+**Features:**
+- Mouse proximity magnification
+- Smooth spring animations
+- Tooltip on hover
+- Animated hint indicator
+
+**Example from codebase:** `src/components/sections/projects.tsx:101`
+
+### 3D Pin
+
+3D card component with perspective hover effects.
+
+**Location:** `src/components/ui/3d-pin.tsx`
+
+**Props:**
+
+```typescript
+interface PinContainerProps {
+  children: React.ReactNode
+  title?: string
+  href?: string
+  className?: string
+  containerClassName?: string
+}
+```
+
+**Usage:**
+
+```tsx
+import { PinContainer } from "@/components/ui/3d-pin"
+
+<PinContainer
+  title="Visit Project"
+  href="https://example.com"
+>
+  <div>Card content</div>
+</PinContainer>
+```
+
+**Features:**
+- 3D rotation on hover
+- Animated ripple effects
+- Floating label with link
+
+### Tooltip
+
+Accessible tooltip using Radix UI.
+
+**Location:** `src/components/ui/tooltip.tsx`
+
+**Components:**
+
+```typescript
+- TooltipProvider  // Wrapper for tooltip context
+- Tooltip          // Root component
+- TooltipTrigger   // Element that triggers tooltip
+- TooltipContent   // Tooltip content
+```
+
+**Usage:**
+
+```tsx
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+
+<TooltipProvider>
+  <Tooltip delayDuration={300}>
+    <TooltipTrigger asChild>
+      <Button variant="outline">Hover me</Button>
+    </TooltipTrigger>
+    <TooltipContent side="bottom">
+      <p>Tooltip text</p>
+    </TooltipContent>
+  </Tooltip>
+</TooltipProvider>
+```
+
+**Example from codebase:** `src/components/sections/hero.tsx:46`
+
+## Navigation components
+
+### Dropdown Menu
+
+Dropdown menu component from Radix UI.
+
+**Location:** `src/components/ui/dropdown-menu.tsx`
+
+### Dialog
+
+Modal dialog component from Radix UI.
+
+**Location:** `src/components/ui/dialog.tsx`
+
+### Tabs
+
+Tab navigation component.
+
+**Location:** `src/components/ui/tabs.tsx`
+
+## Utility components
+
+### Scroll Area
+
+Custom scrollbar component.
+
+**Location:** `src/components/ui/scroll-area.tsx`
+
+### Popover
+
+Popover component from Radix UI.
+
+**Location:** `src/components/ui/popover.tsx`
+
+### Toast
+
+Notification toast system.
+
+**Location:** `src/components/ui/toast.tsx`, `src/components/ui/toaster.tsx`, `src/components/ui/use-toast.ts`
+
+**Usage:**
+
+```tsx
+import { useToast } from "@/components/ui/use-toast"
+
+const { toast } = useToast()
+
+toast({
+  title: "Success!",
+  description: "Your message was sent.",
+  variant: "default",
+})
+```
+
+**Example from codebase:** `src/components/ContactForm.tsx:38`
+
+## Typography
+
+Typography components for consistent text styling.
+
+**Location:** `src/components/ui/typography.tsx`
+
+## Styling patterns
+
+All UI components follow these patterns:
+
+1. **Class merging** - Use `cn()` utility for conditional classes
+2. **Dark mode** - Support dark mode with `dark:` prefix
+3. **Forwarded refs** - Enable DOM access with `forwardRef`
+4. **Radix primitives** - Build on accessible Radix UI components
+5. **Tailwind CSS** - Style with utility classes
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Sections" icon="puzzle-piece" href="/components/sections">
+    Learn about page section components
+  </Card>
+  
+  <Card title="Animations" icon="wand-magic-sparkles" href="/components/animations">
+    Explore animation components
+  </Card>
+</CardGroup>

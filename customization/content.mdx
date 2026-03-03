@@ -1,0 +1,210 @@
+---
+title: Content
+description: Update your skills, projects, and personal information in the portfolio
+---
+
+Manage all portfolio content through structured data files in the `src/data/` directory. This approach keeps content separate from components for easy maintenance.
+
+## Skills management
+
+Skills are defined in `src/data/constants.ts` using a strongly-typed system with TypeScript enums and interfaces.
+
+### Skill structure
+
+Each skill includes:
+
+```typescript
+type Skill = {
+  id: number;
+  name: string;
+  label: string;
+  shortDescription: string;
+  color: string;
+  icon: string;
+};
+```
+
+### Adding a new skill
+
+1. Add the skill name to the `SkillNames` enum:
+
+```typescript
+export enum SkillNames {
+  AWS = "aws",
+  DOCKER = "docker",
+  REACT = "react",
+  // Add your skill
+  PYTHON = "python",
+}
+```
+
+2. Define the skill in the `SKILLS` record:
+
+```typescript
+export const SKILLS: Record<SkillNames, Skill> = {
+  [SkillNames.PYTHON]: {
+    id: 25,
+    name: "python",
+    label: "Python",
+    shortDescription: "Building awesome things with Python!",
+    color: "#3776ab",
+    icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg",
+  },
+  // ... other skills
+};
+```
+
+### Skill properties explained
+
+- `id`: Unique identifier (increment from last skill)
+- `name`: Lowercase identifier for URL slugs
+- `label`: Display name shown in the UI
+- `shortDescription`: Brief, engaging description (supports personality!)
+- `color`: Hex color code for the skill badge
+- `icon`: URL to the skill icon (devicon CDN recommended)
+
+### Icon resources
+
+The portfolio uses [Devicon](https://devicon.dev/) for technology icons:
+
+```typescript
+icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/{tech}/{tech}-original.svg"
+```
+
+Replace `{tech}` with the technology name (lowercase).
+
+## Current skills
+
+The portfolio includes these predefined skills:
+
+- **Frontend**: HTML, CSS, JavaScript, TypeScript, React, Vue, Next.js, Tailwind
+- **Backend**: Node.js, Express, PostgreSQL, MongoDB
+- **DevOps**: AWS, Linux, Docker, Git, GitHub, Nginx
+- **Tools**: Vim, NPM, Prettier, Firebase, WordPress, Vercel
+
+## Skill descriptions
+
+Descriptions can be technical or playful. Examples from the source:
+
+```typescript
+[SkillNames.REACT]: {
+  shortDescription: `"use using" using use = useUsing("use")`,
+},
+
+[SkillNames.DOCKER]: {
+  shortDescription: "The best containerization! 🐳🔥",
+},
+
+[SkillNames.POSTGRES]: {
+  shortDescription: "SQL but make it fashion, purr 💅🐘",
+},
+```
+
+Choose a style that matches your personal brand.
+
+## Projects data
+
+While the source doesn't include a projects file in the provided code, projects typically follow a similar pattern:
+
+```typescript
+export type Project = {
+  id: number;
+  title: string;
+  description: string;
+  technologies: SkillNames[];
+  image: string;
+  liveUrl?: string;
+  githubUrl?: string;
+  featured: boolean;
+};
+
+export const PROJECTS: Project[] = [
+  {
+    id: 1,
+    title: "Your Project",
+    description: "A detailed description of what you built.",
+    technologies: [SkillNames.REACT, SkillNames.NEXTJS],
+    image: "/assets/projects/project-1.png",
+    liveUrl: "https://project.com",
+    githubUrl: "https://github.com/you/project",
+    featured: true,
+  },
+];
+```
+
+## Personal information
+
+Update your personal details in `src/data/config.ts`:
+
+```typescript
+const config = {
+  author: "Your Name",
+  email: "your.email@example.com",
+  site: "https://yoursite.com",
+  social: {
+    twitter: "https://x.com/yourhandle/",
+    linkedin: "https://www.linkedin.com/in/yourprofile/",
+    instagram: "https://www.instagram.com/yourhandle/",
+    github: "https://github.com/yourusername/",
+  },
+};
+```
+
+## Theme disclaimers
+
+Customize the theme switching messages in `src/data/constants.ts`:
+
+```typescript
+export const themeDisclaimers = {
+  light: [
+    "Warning: Light mode emits a gazillion lumens of pure radiance!",
+    "Caution: Light mode ahead! Please don't try this at home.",
+    "Only trained professionals can handle this much brightness.",
+  ],
+  dark: [
+    "Light mode? I thought you went insane... but welcome back!",
+    "Switching to dark mode... How was life on the bright side?",
+    "Dark mode activated! Thank you from the bottom of my heart.",
+  ],
+};
+```
+
+These messages appear randomly when users toggle between light and dark modes.
+
+## Best practices
+
+### Skill icons
+
+- Use consistent icon sources (Devicon recommended)
+- Ensure icons work in both light and dark modes
+- Test icon URLs before deploying
+
+### Descriptions
+
+- Keep skill descriptions concise (under 100 characters)
+- Maintain consistent tone across all skills
+- Consider accessibility when using emojis
+
+### Data organization
+
+- Keep skills ordered by category or importance
+- Use meaningful ID numbers (avoid gaps)
+- Group related technologies together
+
+## TypeScript benefits
+
+The typed skill system provides:
+
+- Autocomplete for skill names
+- Type safety when referencing skills
+- Compile-time error checking
+- Better refactoring support
+
+```typescript
+// TypeScript ensures you use valid skill names
+const mySkills: SkillNames[] = [
+  SkillNames.REACT,
+  SkillNames.TYPESCRIPT,
+  // SkillNames.INVALID // ❌ Error: doesn't exist
+];
+```

@@ -1,0 +1,192 @@
+---
+title: Utility functions
+description: Helper functions and utilities for the 3D Interactive Portfolio
+---
+
+## cn
+
+Merges Tailwind CSS class names with conditional logic using clsx and tailwind-merge.
+
+```tsx
+function cn(...inputs: ClassValue[]): string
+```
+
+### Parameters
+
+<ParamField path="inputs" type="ClassValue[]" required>
+  Variable number of class name inputs (strings, objects, arrays)
+</ParamField>
+
+### Returns
+
+Merged and deduplicated class name string.
+
+### Usage
+
+```tsx
+import { cn } from "@/lib/utils";
+
+function Button({ className, variant }) {
+  return (
+    <button
+      className={cn(
+        "px-4 py-2 rounded",
+        variant === "primary" && "bg-blue-500 text-white",
+        variant === "secondary" && "bg-gray-500 text-white",
+        className
+      )}
+    >
+      Click me
+    </button>
+  );
+}
+```
+
+<Note>
+This utility intelligently merges Tailwind classes, preventing conflicts when the same property is set multiple times.
+</Note>
+
+## sleep
+
+Creates a promise that resolves after a specified delay.
+
+```tsx
+function sleep(ms: number): Promise<void>
+```
+
+### Parameters
+
+<ParamField path="ms" type="number" required>
+  Delay duration in milliseconds
+</ParamField>
+
+### Returns
+
+Promise that resolves after the specified delay.
+
+### Usage
+
+```tsx
+import { sleep } from "@/lib/utils";
+
+async function revealKeyCaps() {
+  await sleep(400);
+  kbd.visible = true;
+  
+  await sleep(900);
+  keycaps.forEach(async (keycap, idx) => {
+    await sleep(idx * 70);
+    keycap.visible = true;
+  });
+}
+```
+
+## generateRandomCursor
+
+Generates a random cursor name and color for multiplayer cursors.
+
+```tsx
+function generateRandomCursor(): { name: string; color: string }
+```
+
+### Returns
+
+<ParamField path="name" type="string">
+  Random name combining an adjective and noun (e.g., "Clever Tiger", "Swift Eagle")
+</ParamField>
+
+<ParamField path="color" type="string">
+  Random hex color from a predefined palette
+</ParamField>
+
+### Usage
+
+```tsx
+import { generateRandomCursor } from "@/lib/generate-random-cursor";
+
+function createNewCursor() {
+  const { name, color } = generateRandomCursor();
+  
+  return {
+    id: userId,
+    name,
+    color,
+    position: { x: 0, y: 0 }
+  };
+}
+```
+
+<Note>
+The function uses a shuffled array of colors to ensure even distribution across multiple cursors.
+</Note>
+
+### Color palette
+
+The following colors are available:
+
+- `#60a5fa` (Blue)
+- `#f87171` (Red)
+- `#4ade80` (Green)
+- `#facc15` (Yellow)
+- `#c084fc` (Purple)
+- `#fb923c` (Orange)
+- `#f43f5e` (Pink)
+- `#818cf8` (Indigo)
+- `#22d3ee` (Cyan)
+- `#a3e635` (Lime)
+
+### Name combinations
+
+Names are generated from combinations of adjectives and nouns:
+
+**Adjectives**: Clever, Brave, Quick, Silent, Eager, Bold, Bright, Fierce, Gentle, Mighty, Noble, Proud, Swift, Calm, Daring
+
+**Nouns**: Tiger, Lion, Eagle, Falcon, Wolf, Panther, Hawk, Bear, Whale, Fox, Lynx, Otter, Serpent, Dragon, Phoenix
+
+## useMousePosition (utils)
+
+Alternative mouse position tracking utility with TypeScript interface.
+
+```tsx
+function useMousePosition(): MousePosition
+```
+
+### Returns
+
+<ParamField path="x" type="number">
+  Mouse X coordinate
+</ParamField>
+
+<ParamField path="y" type="number">
+  Mouse Y coordinate
+</ParamField>
+
+### Usage
+
+```tsx
+import { useMousePosition } from "@/utils/mouse";
+
+function MyComponent() {
+  const mousePosition = useMousePosition();
+  
+  return (
+    <div>
+      Position: {mousePosition.x}, {mousePosition.y}
+    </div>
+  );
+}
+```
+
+<Note>
+This is an alternative implementation to the hook in `@/hooks/use-mouse-position` with explicit TypeScript typing for the return value.
+</Note>
+
+## Lenis utilities
+
+Re-exports all Lenis smooth scrolling utilities from the `lenis/react` package.
+
+```tsx
+import { /* Lenis exports */ } from "@/lib/lenis";
+```
+
+See the [Lenis documentation](https://github.com/studio-freight/lenis) for available exports and usage.

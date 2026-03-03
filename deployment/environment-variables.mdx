@@ -1,0 +1,145 @@
+---
+title: Environment variables
+description: Configure environment variables for your 3D interactive portfolio
+---
+
+Environment variables are used to configure sensitive data and external services in your portfolio. This guide covers all the environment variables used in the project.
+
+## Setting up environment variables
+
+### Local development
+
+For local development, create a `.env.local` file in the root directory of your project:
+
+```bash
+touch .env.local
+```
+
+Add your environment variables to this file:
+
+```bash
+# Email service (required for contact form)
+RESEND_API_KEY=your_resend_api_key_here
+
+# WebSocket URL for real-time features (optional)
+NEXT_PUBLIC_WS_URL=your_websocket_url_here
+
+# Umami analytics (optional)
+UMAMI_DOMAIN=your_umami_domain_here
+UMAMI_SITE_ID=your_umami_site_id_here
+```
+
+<Warning>
+  Never commit `.env.local` to version control. It should be listed in your `.gitignore` file.
+</Warning>
+
+### Production (Vercel)
+
+For production deployment on Vercel:
+
+<Steps>
+  <Step title="Navigate to environment variables">
+    1. Go to your Vercel project dashboard
+    2. Click on "Settings"
+    3. Select "Environment Variables" from the sidebar
+  </Step>
+
+  <Step title="Add variables">
+    Add each environment variable with its corresponding value. You can set variables for different environments:
+    
+    - Production
+    - Preview
+    - Development
+  </Step>
+
+  <Step title="Redeploy">
+    After adding or updating environment variables, redeploy your application for changes to take effect.
+  </Step>
+</Steps>
+
+## Required variables
+
+### RESEND_API_KEY
+
+**Required for**: Contact form email functionality
+
+**Location used**: `src/app/api/send/route.ts:6`
+
+This variable stores your Resend API key, which is used to send emails from the contact form.
+
+```bash
+RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxx
+```
+
+See [Email setup](/deployment/email-setup) for instructions on obtaining your Resend API key.
+
+## Optional variables
+
+### NEXT_PUBLIC_WS_URL
+
+**Required for**: Real-time cursor tracking and chat features
+
+**Location used**: `src/contexts/socketio.tsx:57`
+
+This variable stores the WebSocket server URL for real-time features like remote cursor tracking.
+
+```bash
+NEXT_PUBLIC_WS_URL=https://your-websocket-server.com
+```
+
+<Note>
+  The `NEXT_PUBLIC_` prefix makes this variable available in the browser. Only use this prefix for non-sensitive data.
+</Note>
+
+### UMAMI_DOMAIN
+
+**Required for**: Analytics tracking
+
+**Location used**: `src/app/layout.tsx:64`
+
+The URL to your Umami analytics script.
+
+```bash
+UMAMI_DOMAIN=https://analytics.yourdomain.com/script.js
+```
+
+### UMAMI_SITE_ID
+
+**Required for**: Analytics tracking
+
+**Location used**: `src/app/layout.tsx:65`
+
+Your unique Umami website ID for tracking analytics.
+
+```bash
+UMAMI_SITE_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+```
+
+## Environment variable summary
+
+| Variable | Required | Description | Used In |
+|----------|----------|-------------|----------|
+| `RESEND_API_KEY` | Yes | Resend API key for email functionality | Email API route |
+| `NEXT_PUBLIC_WS_URL` | No | WebSocket server URL for real-time features | Socket.io context |
+| `UMAMI_DOMAIN` | No | Umami analytics script URL | Layout component |
+| `UMAMI_SITE_ID` | No | Umami website tracking ID | Layout component |
+
+## Security best practices
+
+<Warning>
+  - Never commit API keys or secrets to your repository
+  - Use `.env.local` for local development (not `.env`)
+  - Only use `NEXT_PUBLIC_` prefix for non-sensitive data that's safe to expose in the browser
+  - Rotate API keys periodically
+  - Use different API keys for development and production environments
+</Warning>
+
+## Verifying your setup
+
+To verify that your environment variables are configured correctly:
+
+1. **Local development**: Start the dev server with `npm run dev`
+2. **Check the console**: Look for any errors related to missing environment variables
+3. **Test functionality**: Try using the contact form to verify the Resend API key works
+
+If variables are missing, you'll see errors in the console or functionality won't work as expected.

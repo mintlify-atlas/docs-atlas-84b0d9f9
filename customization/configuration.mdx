@@ -1,0 +1,120 @@
+---
+title: Configuration
+description: Configure your 3D interactive portfolio with site metadata, SEO settings, and social links
+---
+
+The portfolio configuration is centralized in `src/data/config.ts`, where you can customize your site's metadata, SEO settings, and social media links.
+
+## Site metadata
+
+Update the basic site information to reflect your personal brand:
+
+```typescript
+const config = {
+  title: "Your Name | Your Title",
+  description: {
+    long: "Your detailed professional bio and background...",
+    short: "A concise description of who you are and what you do.",
+  },
+  keywords: [
+    "Your Name",
+    "portfolio",
+    "web development",
+    // Add relevant keywords
+  ],
+  author: "Your Name",
+  email: "your.email@example.com",
+  site: "https://yoursite.com",
+};
+```
+
+### Description fields
+
+The configuration supports two description lengths:
+
+- `long`: Used for detailed about sections and full bio displays
+- `short`: Used for meta descriptions and concise introductions
+
+## SEO configuration
+
+The config automatically generates Open Graph images using a dynamic getter:
+
+```typescript
+get ogImg() {
+  return this.site + "/assets/seo/og-image.png";
+}
+```
+
+Place your Open Graph image at `public/assets/seo/og-image.png` for proper social media previews.
+
+### Keywords optimization
+
+Keywords are used for SEO optimization. Include:
+
+- Your name and variations
+- Your domain name
+- Professional titles and skills
+- Project names
+- Technologies you work with
+
+## Social links
+
+Configure your social media presence in the `social` object:
+
+```typescript
+social: {
+  twitter: "https://x.com/yourhandle/",
+  linkedin: "https://www.linkedin.com/in/yourprofile/",
+  instagram: "https://www.instagram.com/yourhandle/",
+  facebook: "https://www.facebook.com/yourprofile",
+  github: "https://github.com/yourusername/",
+}
+```
+
+These links are displayed throughout the portfolio and in the footer.
+
+## Example configuration
+
+Here's the default configuration structure:
+
+```typescript
+const config = {
+  title: "Abhijit Zende | AI Enthusiast",
+  description: {
+    long: "Explore the portfolio of Abhijit, a Computer Science Engineer with 1.5 year experience in Development, DevOps & Database management...",
+    short: "Discover the portfolio of Abhijit, a AI enthusiast solving real life problems in DevOps and Development.",
+  },
+  keywords: [
+    "Abhijit",
+    "portfolio",
+    "DevOps",
+    "Development",
+    "AWS",
+    "DevSecOps",
+  ],
+  author: "Abhijit Zende",
+  email: "abhijitzende75@gmail.com",
+  site: "https://abhijitzende.com",
+  get ogImg() {
+    return this.site + "/assets/seo/og-image.png";
+  },
+  social: {
+    twitter: "https://x.com/_Abhi_Speaks/",
+    linkedin: "https://www.linkedin.com/in/zende-abhijit/",
+    github: "https://github.com/Abhiz2411/",
+  },
+};
+
+export { config };
+```
+
+## Accessing configuration
+
+Import the configuration anywhere in your application:
+
+```typescript
+import { config } from "@/data/config";
+
+console.log(config.title); // Your site title
+console.log(config.email); // Your email
+```

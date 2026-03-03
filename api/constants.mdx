@@ -1,0 +1,210 @@
+---
+title: constants
+description: Skill definitions, enums, and theme constants for the portfolio
+---
+
+## Overview
+
+The constants module exports skill data structures, skill enumerations, and theme-related constants used throughout the portfolio.
+
+## SkillNames enum
+
+Enumeration of all available skill identifiers.
+
+```typescript
+enum SkillNames {
+  AWS = "aws",
+  LINUX = "linux",
+  GIT = "git",
+  DOCKER = "docker",
+  HTML = "html",
+  CSS = "css",
+  JS = "js",
+  POSTGRES = "postgres",
+  TS = "ts",
+  REACT = "react",
+  VUE = "vue",
+  NEXTJS = "nextjs",
+  TAILWIND = "tailwind",
+  NODEJS = "nodejs",
+  EXPRESS = "express",
+  MONGODB = "mongodb",
+  GITHUB = "github",
+  PRETTIER = "prettier",
+  NPM = "npm",
+  FIREBASE = "firebase",
+  WORDPRESS = "wordpress",
+  NGINX = "nginx",
+  VIM = "vim",
+  VERCEL = "vercel",
+}
+```
+
+## Skill type
+
+Type definition for individual skill objects.
+
+```typescript
+type Skill = {
+  id: number;
+  name: string;
+  label: string;
+  shortDescription: string;
+  color: string;
+  icon: string;
+};
+```
+
+### Properties
+
+<ParamField path="id" type="number" required>
+  Unique numeric identifier for the skill
+</ParamField>
+
+<ParamField path="name" type="string" required>
+  Lowercase identifier matching the SkillNames enum value (e.g., "react", "typescript")
+</ParamField>
+
+<ParamField path="label" type="string" required>
+  Display name for the skill with proper capitalization (e.g., "React", "TypeScript")
+</ParamField>
+
+<ParamField path="shortDescription" type="string" required>
+  Brief, casual description of the skill with personality and humor
+</ParamField>
+
+<ParamField path="color" type="string" required>
+  Hex color code representing the skill's brand color (e.g., "#61dafb" for React)
+</ParamField>
+
+<ParamField path="icon" type="string" required>
+  URL to the skill's icon image, typically from DevIcons CDN
+</ParamField>
+
+## SKILLS constant
+
+A Record mapping each SkillNames enum value to its complete Skill object.
+
+```typescript
+const SKILLS: Record<SkillNames, Skill>;
+```
+
+### Usage
+
+```typescript
+import { SKILLS, SkillNames } from '@/data/constants';
+
+// Access a specific skill
+const reactSkill = SKILLS[SkillNames.REACT];
+console.log(reactSkill.label); // "React"
+console.log(reactSkill.color); // "#61dafb"
+
+// Iterate over all skills
+Object.values(SKILLS).forEach(skill => {
+  console.log(skill.label, skill.shortDescription);
+});
+
+// Get skill by enum
+const tsSkill = SKILLS[SkillNames.TS];
+```
+
+## Example skill entries
+
+### JavaScript
+
+<ParamField path="SKILLS[SkillNames.JS]" type="Skill">
+  ```json
+  {
+    "id": 1,
+    "name": "js",
+    "label": "JavaScript",
+    "shortDescription": "yeeting code into the DOM since '95, no cap! 💯🚀",
+    "color": "#f0db4f",
+    "icon": "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg"
+  }
+  ```
+</ParamField>
+
+### React
+
+<ParamField path="SKILLS[SkillNames.REACT]" type="Skill">
+  ```json
+  {
+    "id": 5,
+    "name": "react",
+    "label": "React",
+    "shortDescription": "\"use using\" \nusing use = useUsing(\"use\")",
+    "color": "#61dafb",
+    "icon": "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg"
+  }
+  ```
+</ParamField>
+
+### Docker
+
+<ParamField path="SKILLS[SkillNames.DOCKER]" type="Skill">
+  ```json
+  {
+    "id": 20,
+    "name": "docker",
+    "label": "Docker",
+    "shortDescription": "The best containerization! 🐳🔥",
+    "color": "#2496ed",
+    "icon": "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg"
+  }
+  ```
+</ParamField>
+
+## themeDisclaimers constant
+
+Humorous messages displayed when switching between light and dark themes.
+
+```typescript
+const themeDisclaimers: {
+  light: string[];
+  dark: string[];
+};
+```
+
+### Properties
+
+<ParamField path="light" type="string[]" required>
+  Array of 5 witty warning messages shown when switching to light mode
+  
+  Examples:
+  - "Warning: Light mode emits a gazillion lumens of pure radiance!"
+  - "Caution: Light mode ahead! Please don't try this at home."
+  - "Only trained professionals can handle this much brightness. Proceed with sunglasses!"
+</ParamField>
+
+<ParamField path="dark" type="string[]" required>
+  Array of 5 welcome-back messages shown when switching to dark mode
+  
+  Examples:
+  - "Light mode? I thought you went insane... but welcome back to the dark side!"
+  - "Dark mode activated! Thanks you from the bottom of my heart, and my eyes too."
+  - "Welcome back to the shadows. How was life out there in the light?"
+</ParamField>
+
+### Usage
+
+```typescript
+import { themeDisclaimers } from '@/data/constants';
+
+// Get a random light mode message
+const randomLightMessage = themeDisclaimers.light[
+  Math.floor(Math.random() * themeDisclaimers.light.length)
+];
+
+// Get a random dark mode message
+const randomDarkMessage = themeDisclaimers.dark[
+  Math.floor(Math.random() * themeDisclaimers.dark.length)
+];
+```
+
+## Notes
+
+- All skill icons use the DevIcons CDN for consistency and reliability
+- Skill descriptions maintain a casual, humorous tone to reflect the portfolio's personality
+- The SKILLS constant is fully typed with TypeScript for type safety
+- Some skills in the source code are commented out but can be enabled as needed

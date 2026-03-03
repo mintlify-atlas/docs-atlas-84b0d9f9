@@ -1,0 +1,75 @@
+---
+title: Footer
+description: Responsive footer component with copyright, social media, and navigation links
+---
+
+The Footer component provides a responsive footer section with copyright information, social media buttons, and configurable navigation links. It automatically displays the current year and adapts to different screen sizes.
+
+## Props
+
+This component does not accept any props. All configuration is handled through the footer config file.
+
+## Usage
+
+```tsx
+import Footer from "@/components/footer/footer";
+
+export default function Layout() {
+  return (
+    <>
+      {/* Page content */}
+      <Footer />
+    </>
+  );
+}
+```
+
+## Features
+
+- **Responsive layout**: Flexes from column to row on different screen sizes
+- **Dynamic copyright**: Automatically shows current year
+- **Social media integration**: Displays social media icon buttons
+- **Configurable links**: Navigation links from footer config
+- **Styled border**: Top border separating from content
+
+## Layout structure
+
+The footer is organized into three main sections:
+
+1. **Copyright notice**: Shows `© {year} {author}. All rights reserved.`
+2. **Social media buttons**: Interactive social media icons
+3. **Navigation links**: Configurable footer navigation from config
+
+## Responsive behavior
+
+- **Mobile (default)**: Stacked column layout with centered items
+- **Desktop (sm and up)**: Row layout with space-between alignment
+- Padding adjusts from `px-4` to `md:px-6` based on screen size
+
+## Configuration
+
+Footer links are configured in `/components/footer/config.ts`:
+
+```tsx
+export const footer = [
+  { title: "Privacy", href: "/privacy" },
+  { title: "Terms", href: "/terms" },
+  // Add more links as needed
+];
+```
+
+Author information comes from `/data/config.ts`:
+
+```tsx
+export const config = {
+  author: "Your Name",
+  // Other config options
+};
+```
+
+## Styling
+
+- Uses Tailwind CSS utility classes
+- Supports dark mode with automatic color adjustments
+- Link buttons use the `link` variant for consistent styling
+- Text colors adapt based on theme (gray-500 in light, gray-400 in dark)

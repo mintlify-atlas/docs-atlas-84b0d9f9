@@ -1,0 +1,116 @@
+---
+title: config
+description: Main configuration object for portfolio site metadata and social links
+---
+
+## Overview
+
+The `config` object contains all core configuration for the portfolio site, including SEO metadata, social media links, and site information.
+
+## Type definition
+
+```typescript
+type Config = {
+  title: string;
+  description: {
+    long: string;
+    short: string;
+  };
+  keywords: string[];
+  author: string;
+  email: string;
+  site: string;
+  ogImg: string;
+  social: {
+    twitter: string;
+    linkedin: string;
+    instagram: string;
+    facebook: string;
+    github: string;
+  };
+};
+```
+
+## Properties
+
+<ParamField path="title" type="string" required>
+  The page title used for SEO and browser tabs
+</ParamField>
+
+<ParamField path="description" type="object" required>
+  Portfolio description in multiple formats
+  
+  <ParamField path="description.long" type="string" required>
+    Extended description with full background and experience details
+  </ParamField>
+  
+  <ParamField path="description.short" type="string" required>
+    Concise summary for social media previews and quick introductions
+  </ParamField>
+</ParamField>
+
+<ParamField path="keywords" type="string[]" required>
+  Array of SEO keywords for search engine optimization and discoverability
+</ParamField>
+
+<ParamField path="author" type="string" required>
+  Full name of the portfolio owner
+</ParamField>
+
+<ParamField path="email" type="string" required>
+  Contact email address
+</ParamField>
+
+<ParamField path="site" type="string" required>
+  Full URL of the portfolio website (e.g., "https://abhijitzende.com")
+</ParamField>
+
+<ParamField path="ogImg" type="string" required>
+  Open Graph image URL for social media previews. This is a computed property that automatically appends `/assets/seo/og-image.png` to the site URL
+</ParamField>
+
+<ParamField path="social" type="object" required>
+  Social media profile links
+  
+  <ParamField path="social.twitter" type="string" required>
+    Twitter/X profile URL
+  </ParamField>
+  
+  <ParamField path="social.linkedin" type="string" required>
+    LinkedIn profile URL
+  </ParamField>
+  
+  <ParamField path="social.instagram" type="string" required>
+    Instagram profile URL
+  </ParamField>
+  
+  <ParamField path="social.facebook" type="string" required>
+    Facebook profile URL
+  </ParamField>
+  
+  <ParamField path="social.github" type="string" required>
+    GitHub profile URL
+  </ParamField>
+</ParamField>
+
+## Usage
+
+```typescript
+import { config } from '@/data/config';
+
+// Access site metadata
+console.log(config.title);
+console.log(config.description.short);
+
+// Access social links
+const githubUrl = config.social.github;
+
+// Get OG image (computed property)
+const ogImage = config.ogImg; // Returns: "https://abhijitzende.com/assets/seo/og-image.png"
+```
+
+## Notes
+
+- The `ogImg` property is a getter that dynamically constructs the URL from the `site` property
+- All social media URLs should be complete URLs including the protocol (https://)
+- Keywords array is used for SEO meta tags throughout the site

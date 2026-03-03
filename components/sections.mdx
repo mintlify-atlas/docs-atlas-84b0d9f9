@@ -1,0 +1,609 @@
+---
+title: Sections
+description: Page section components that compose the portfolio layout
+---
+
+The portfolio is organized into distinct page sections, each serving a specific purpose. These sections are the main building blocks of the single-page application.
+
+## Section components
+
+### Hero Section
+
+The landing section with name, title, and call-to-action buttons.
+
+**Location:** `src/components/sections/hero.tsx`
+
+**Features:**
+- Animated text reveals using BlurIn and BoxReveal
+- Social media links (GitHub, LinkedIn)
+- Resume download button
+- Scroll down indicator
+- Responsive grid layout
+- Integration with preloader
+
+**Component structure:**
+
+```tsx
+const HeroSection = () => {
+  const { isLoading } = usePreloader()
+  
+  return (
+    <section id="hero" className="relative w-full h-screen">
+      <div className="grid md:grid-cols-2">
+        <div className="col-span-1">
+          {!isLoading && (
+            <>
+              {/* Name and title with animations */}
+              {/* CTA buttons */}
+            </>
+          )}
+        </div>
+      </div>
+      <ScrollDownIcon />
+    </section>
+  )
+}
+```
+
+**Key elements:**
+
+1. **Name display** with tooltip easter egg (line 46-69)
+2. **Professional title** - "AI Enthusiast" (line 79)
+3. **Action buttons:**
+   - Resume link (line 84-96)
+   - Hire Me button (line 101-108)
+   - Social media icons (line 114-129)
+
+**Configuration:**
+
+The hero section reads from the global config:
+
+```typescript
+import { config } from "@/data/config"
+
+<h1>{config.author}</h1>
+<Link href={config.social.github}>...</Link>
+<Link href={config.social.linkedin}>...</Link>
+```
+
+**Animation sequence:**
+
+```tsx
+<BlurIn delay={0.7}>
+  <p>Hi, I am</p>
+</BlurIn>
+
+<BlurIn delay={1}>
+  <h1>{config.author}</h1>
+</BlurIn>
+
+<BlurIn delay={1.2}>
+  <p>AI Enthusiast</p>
+</BlurIn>
+
+<BoxReveal delay={2}>
+  <Button>Resume</Button>
+</BoxReveal>
+```
+
+### Skills Section
+
+Interactive skills showcase section.
+
+**Location:** `src/components/sections/skills.tsx`
+
+**Features:**
+- Sticky heading that stays visible while scrolling
+- BoxReveal animation on title
+- Interactive hint: "(hint: press a key)"
+- Extended height for scrolling effect (150dvh)
+
+**Component structure:**
+
+```tsx
+const SkillsSection = () => {
+  return (
+    <section id="skills" className="w-full h-screen md:h-[150dvh]">
+      <div className="top-[70px] sticky mb-96">
+        <Link href={"#skills"}>
+          <BoxReveal width="100%">
+            <h2>SKILLS</h2>
+          </BoxReveal>
+        </Link>
+        <p>(hint: press a key)</p>
+      </div>
+    </section>
+  )
+}
+```
+
+**Styling details:**
+
+The title uses gradient text for a sophisticated look:
+
+```tsx
+className={cn(
+  "bg-clip-text text-4xl text-center text-transparent md:text-7xl",
+  "bg-gradient-to-b from-black/80 to-black/50",
+  "dark:bg-gradient-to-b dark:from-white/80 dark:to-white/20"
+)}
+```
+
+### Projects Section
+
+Showcase of portfolio projects with modal details.
+
+**Location:** `src/components/sections/projects.tsx`
+
+**Features:**
+- Grid layout of project cards
+- Animated modal for project details
+- Image hover effects
+- Technology stack display with FloatingDock
+- Smooth scroll within modal
+
+**Component structure:**
+
+```tsx
+const ProjectsSection = () => {
+  return (
+    <section id="projects" className="max-w-7xl mx-auto md:h-[130vh]">
+      <h2>Projects</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3">
+        {projects.map((project) => (
+          <Modall key={project.src} project={project} />
+        ))}
+      </div>
+    </section>
+  )
+}
+```
+
+**Project data:**
+
+```typescript
+import projects, { Project } from "@/data/projects"
+
+interface Project {
+  src: string
+  title: string
+  category: string
+  live: string
+  skills: {
+    frontend?: Array<{ title: string; icon: React.ReactNode }>
+    backend?: Array<{ title: string; icon: React.ReactNode }>
+  }
+  content: React.ReactNode
+}
+```
+
+**Modal implementation:**
+
+Each project card opens a modal with full details:
+
+```tsx
+const Modall = ({ project }: { project: Project }) => {
+  return (
+    <Modal>
+      <ModalTrigger>
+        <div className="relative w-[400px] h-auto">
+          <Image src={project.src} alt={project.title} />
+          <div className="absolute bottom-0 bg-gradient-to-t from-black">
+            <div className="text-lg">{project.title}</div>
+            <div className="text-xs">{project.category}</div>
+          </div>
+        </div>
+      </ModalTrigger>
+      <ModalBody>
+        <SmoothScroll isInsideModal={true}>
+          <ModalContent>
+            <ProjectContents project={project} />
+          </ModalContent>
+        </SmoothScroll>
+        <ModalFooter>
+          <button>Cancel</button>
+          <Link href={project.live}>
+            <button>Visit</button>
+          </Link>
+        </ModalFooter>
+      </ModalBody>
+    </Modal>
+  )
+}
+```
+
+**Project details:**
+
+The `ProjectContents` component displays:
+- Project title
+- Frontend technologies (FloatingDock)
+- Backend technologies (FloatingDock)
+- Rich content (passed as React nodes)
+
+```tsx
+const ProjectContents = ({ project }: { project: Project }) => {
+  return (
+    <>
+      <h4>{project.title}</h4>
+      <div className="flex justify-evenly">
+        <div>
+          <p>Frontend</p>
+          {project.skills.frontend?.length > 0 && (
+            <FloatingDock items={project.skills.frontend} />
+          )}
+        </div>
+        {project.skills.backend?.length > 0 && (
+          <div>
+            <p>Backend</p>
+            <FloatingDock items={project.skills.backend} />
+          </div>
+        )}
+      </div>
+      {project.content}
+    </>
+  )
+}
+```
+
+### Contact Section
+
+Contact form for visitor inquiries.
+
+**Location:** `src/components/sections/contact.tsx`
+
+**Features:**
+- Card-based layout with backdrop blur
+- Integrated ContactForm component
+- Email link with obfuscation
+- Responsive grid layout
+
+**Component structure:**
+
+```tsx
+const ContactSection = () => {
+  return (
+    <section id="contact" className="min-h-screen max-w-7xl mx-auto">
+      <h2>
+        LET&apos;S WORK <br />
+        TOGETHER
+      </h2>
+      <div className="grid grid-cols-1 md:grid-cols-2">
+        <Card className="bg-white/70 dark:bg-black/70 backdrop-blur-sm">
+          <CardHeader>
+            <CardTitle>Contact Form</CardTitle>
+            <CardDescription>
+              Please contact me directly at{" "}
+              <a href={`mailto:${config.email}`}>
+                {config.email.replace(/@/g, "(at)")}
+              </a>
+              {" "}or drop your info here.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ContactForm />
+          </CardContent>
+        </Card>
+      </div>
+    </section>
+  )
+}
+```
+
+**Configuration:**
+
+Reads email from global config:
+
+```typescript
+import { config } from "@/data/config"
+
+<a href={`mailto:${config.email}`}>
+  {config.email.replace(/@/g, "(at)")}
+</a>
+```
+
+## Layout components
+
+### Header
+
+Main navigation header with animated menu.
+
+**Location:** `src/components/header/header.tsx`
+
+**Features:**
+- Animated slide-in on page load
+- Toggle menu button with morph animation
+- Theme toggle integration
+- Online users counter
+- Transparent background that adapts when menu opens
+- Delayed animation after preloader
+
+**Props:**
+
+```typescript
+interface HeaderProps {
+  loader?: boolean  // Enable preloader delay
+}
+```
+
+**Component structure:**
+
+```tsx
+const Header = ({ loader }: HeaderProps) => {
+  const [isActive, setIsActive] = useState<boolean>(false)
+  
+  return (
+    <motion.header
+      style={{
+        background: isActive ? "hsl(var(--background) / .8)" : "transparent"
+      }}
+      initial={{ y: -80 }}
+      animate={{ y: 0 }}
+      transition={{
+        delay: loader ? 3.5 : 0,
+        duration: 0.8,
+      }}
+    >
+      <div className="flex items-center justify-between">
+        <Link href="/">
+          <Button variant="link">{config.author}</Button>
+        </Link>
+        
+        <OnlineUsers />
+        <FunnyThemeToggle />
+        
+        <Button onClick={() => setIsActive(!isActive)}>
+          <motion.p animate={!isActive ? "open" : "closed"}>
+            Menu
+          </motion.p>
+          <motion.p animate={isActive ? "open" : "closed"}>
+            Close
+          </motion.p>
+        </Button>
+      </div>
+      
+      <AnimatePresence mode="wait">
+        {isActive && <Nav setIsActive={setIsActive} />}
+      </AnimatePresence>
+    </motion.header>
+  )
+}
+```
+
+**Animation details:**
+
+The header uses custom animation variants defined in `./anim.ts`:
+- `opacity` - Fade between "Menu" and "Close" text
+- `background` - Animated background overlay
+
+### Footer
+
+Page footer with links and social media.
+
+**Location:** `src/components/footer/footer.tsx`
+
+**Features:**
+- Copyright notice
+- Social media icons
+- Navigation links
+- Responsive layout
+
+**Component structure:**
+
+```tsx
+function Footer() {
+  const year = new Date().getFullYear()
+  
+  return (
+    <footer className="flex w-full border-t">
+      <p>© {year} {config.author}. All rights reserved.</p>
+      <SocialMediaButtons />
+      <nav>
+        {footer.map((link) => (
+          <Link href={link.href}>
+            <Button variant="link">{link.title}</Button>
+          </Link>
+        ))}
+      </nav>
+    </footer>
+  )
+}
+```
+
+**Configuration:**
+
+Footer links are defined in `src/components/footer/config.ts`.
+
+## Utility components
+
+### ContactForm
+
+Form component used in Contact section.
+
+**Location:** `src/components/ContactForm.tsx`
+
+**Features:**
+- Form validation
+- Loading states
+- Toast notifications
+- API integration
+- Animated submit button
+
+**State management:**
+
+```tsx
+const ContactForm = () => {
+  const [fullName, setFullName] = useState("")
+  const [email, setEmail] = useState("")
+  const [message, setMessage] = useState("")
+  const [loading, setLoading] = useState(false)
+  
+  const { toast } = useToast()
+  const router = useRouter()
+  
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setLoading(true)
+    
+    try {
+      const res = await fetch("/api/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fullName, email, message }),
+      })
+      
+      const data = await res.json()
+      if (data.error) throw new Error(data.error)
+      
+      toast({
+        title: "Thank you!",
+        description: "I'll get back to you as soon as possible.",
+      })
+      
+      // Reset form
+      setFullName("")
+      setEmail("")
+      setMessage("")
+      
+      setTimeout(() => router.push("/"), 1000)
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Something went wrong!",
+        variant: "destructive",
+      })
+    }
+    
+    setLoading(false)
+  }
+  
+  return <form onSubmit={handleSubmit}>...</form>
+}
+```
+
+### Particles
+
+Animated particle background effect.
+
+**Location:** `src/components/Particles.tsx`
+
+**Props:**
+
+```typescript
+interface ParticlesProps {
+  className?: string
+  quantity?: number      // Default: 30
+  staticity?: number     // Default: 50
+  ease?: number          // Default: 50
+  refresh?: boolean
+}
+```
+
+**Features:**
+- Canvas-based particle system
+- Mouse interaction with magnetism effect
+- Fade effect near edges
+- Responsive to viewport size
+- GPU-accelerated animations
+
+### Preloader
+
+Loading screen with progress animation.
+
+**Location:** `src/components/preloader/index.tsx`
+
+**Features:**
+- GSAP-powered progress animation
+- Context provider for loading state
+- Bypass function for skipping
+- Configurable loading time
+
+**Context API:**
+
+```typescript
+interface PreloaderContextType {
+  isLoading: boolean
+  loadingPercent: number
+  bypassLoading: () => void
+}
+
+const { isLoading, loadingPercent, bypassLoading } = usePreloader()
+```
+
+**Usage:**
+
+```tsx
+import Preloader, { usePreloader } from "@/components/preloader"
+
+// Wrap app
+<Preloader>
+  <App />
+</Preloader>
+
+// Use in components
+const { isLoading } = usePreloader()
+
+{!isLoading && (
+  <div>Content after loading</div>
+)}
+```
+
+### ScrollDownIcon
+
+Animated scroll indicator.
+
+**Location:** `src/components/scroll-down-icon.tsx`
+
+**Used in:** Hero section to indicate scrollable content
+
+## Common patterns
+
+### Section ID anchors
+
+All sections use IDs for navigation:
+
+```tsx
+<section id="hero">...</section>
+<section id="skills">...</section>
+<section id="projects">...</section>
+<section id="contact">...</section>
+```
+
+### Configuration integration
+
+Sections read from centralized config:
+
+```typescript
+import { config } from "@/data/config"
+
+// Access author name
+config.author
+
+// Access social links
+config.social.github
+config.social.linkedin
+
+// Access email
+config.email
+```
+
+### Responsive design
+
+Sections use responsive classes:
+
+```tsx
+<div className="grid grid-cols-1 md:grid-cols-2">
+<h2 className="text-4xl md:text-7xl">
+<div className="h-screen md:h-[150dvh]">
+```
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Animations" icon="wand-magic-sparkles" href="/components/animations">
+    Learn about animation components
+  </Card>
+  
+  <Card title="UI components" icon="layer-group" href="/components/ui-components">
+    Explore UI components
+  </Card>
+</CardGroup>

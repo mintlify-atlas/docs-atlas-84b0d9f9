@@ -1,0 +1,268 @@
+---
+title: Custom hooks
+description: React hooks for common functionality in the 3D Interactive Portfolio
+---
+
+## useViewport
+
+Tracks the current viewport dimensions (width and height).
+
+```tsx
+const { width, height } = useViewport();
+```
+
+### Returns
+
+<ParamField path="width" type="number">
+  Current viewport width in pixels
+</ParamField>
+
+<ParamField path="height" type="number">
+  Current viewport height in pixels
+</ParamField>
+
+### Usage
+
+```tsx
+import { useViewport } from "@/hooks/use-viewport";
+
+function MyComponent() {
+  const { width, height } = useViewport();
+  
+  return (
+    <div>
+      Viewport: {width}x{height}
+    </div>
+  );
+}
+```
+
+## useThrottle
+
+Throttles a function to limit how often it can be called.
+
+```tsx
+const throttledFunc = useThrottle(func, limit);
+```
+
+### Parameters
+
+<ParamField path="func" type="T extends (...args: any[]) => void" required>
+  The function to throttle
+</ParamField>
+
+<ParamField path="limit" type="number" required>
+  Time limit in milliseconds between function calls
+</ParamField>
+
+### Returns
+
+A throttled version of the input function that maintains the same type signature.
+
+### Usage
+
+```tsx
+import { useThrottle } from "@/hooks/use-throttle";
+
+function MyComponent() {
+  const handleScroll = useThrottle(() => {
+    console.log("Scrolling...");
+  }, 200);
+  
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
+  
+  return <div>Content</div>;
+}
+```
+
+## useOutsideClick
+
+Detects clicks outside a referenced element and triggers a callback.
+
+```tsx
+useOutsideClick(ref, callback);
+```
+
+### Parameters
+
+<ParamField path="ref" type="React.RefObject<HTMLDivElement>" required>
+  Reference to the element to monitor
+</ParamField>
+
+<ParamField path="callback" type="Function" required>
+  Function to call when a click outside the element is detected
+</ParamField>
+
+### Usage
+
+```tsx
+import { useOutsideClick } from "@/hooks/use-outside-click";
+
+function MyComponent() {
+  const menuRef = useRef<HTMLDivElement>(null);
+  
+  useOutsideClick(menuRef, () => {
+    console.log("Clicked outside menu");
+  });
+  
+  return <div ref={menuRef}>Menu content</div>;
+}
+```
+
+## useMouse
+
+Tracks mouse position, angle, and acceleration with configurable options.
+
+```tsx
+const { x, y, angle, acceleration } = useMouse(options);
+```
+
+### Parameters
+
+<ParamField path="allowPage" type="boolean">
+  Use pageX/pageY instead of clientX/clientY
+</ParamField>
+
+<ParamField path="allowAngle" type="boolean">
+  Track mouse movement angle
+</ParamField>
+
+<ParamField path="allowAcc" type="boolean">
+  Track mouse acceleration
+</ParamField>
+
+### Returns
+
+<ParamField path="x" type="number">
+  Mouse X position
+</ParamField>
+
+<ParamField path="y" type="number">
+  Mouse Y position
+</ParamField>
+
+<ParamField path="angle" type="number">
+  Mouse movement angle in radians (when allowAngle is true)
+</ParamField>
+
+<ParamField path="acceleration" type="number">
+  Mouse acceleration value (when allowAcc is true)
+</ParamField>
+
+### Usage
+
+```tsx
+import { useMouse } from "@/hooks/use-mouse";
+
+function ElasticCursor() {
+  const { x, y } = useMouse();
+  
+  return (
+    <div
+      className="cursor"
+      style={{ left: x, top: y }}
+    />
+  );
+}
+```
+
+## useMousePosition
+
+Tracks the current mouse cursor position.
+
+```tsx
+const mousePosition = useMousePosition();
+```
+
+### Returns
+
+<ParamField path="x" type="number">
+  Mouse X coordinate
+</ParamField>
+
+<ParamField path="y" type="number">
+  Mouse Y coordinate
+</ParamField>
+
+### Usage
+
+```tsx
+import { useMousePosition } from "@/hooks/use-mouse-position";
+
+function MyComponent() {
+  const { x, y } = useMousePosition();
+  
+  return <div>Cursor: ({x}, {y})</div>;
+}
+```
+
+## useMediaQuery
+
+Evaluates a CSS media query and returns whether it matches.
+
+```tsx
+const matches = useMediaQuery(query);
+```
+
+### Parameters
+
+<ParamField path="query" type="string" required>
+  CSS media query string to evaluate
+</ParamField>
+
+### Returns
+
+Boolean indicating whether the media query matches.
+
+### Usage
+
+```tsx
+import { useMediaQuery } from "@/hooks/use-media-query";
+
+function AnimatedBackground() {
+  const isMobile = useMediaQuery("(max-width: 768px)");
+  
+  return (
+    <div>
+      {isMobile ? "Mobile view" : "Desktop view"}
+    </div>
+  );
+}
+```
+
+## useDevToolsOpen
+
+Detects when browser developer tools are opened.
+
+```tsx
+const { isDevToolsOpen } = useDevToolsOpen();
+```
+
+### Returns
+
+<ParamField path="isDevToolsOpen" type="boolean">
+  True when developer tools are detected as open
+</ParamField>
+
+### Usage
+
+```tsx
+import { useDevToolsOpen } from "@/hooks/use-devtools-open";
+
+function MyComponent() {
+  const { isDevToolsOpen } = useDevToolsOpen();
+  
+  return (
+    <div>
+      {isDevToolsOpen && "Developer tools detected!"}
+    </div>
+  );
+}
+```
+
+<Note>
+This hook uses the `devtools-detector` library and automatically stops detection once developer tools are first opened.
+</Note>

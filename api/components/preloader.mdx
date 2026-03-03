@@ -1,0 +1,160 @@
+---
+title: Preloader
+description: Loading screen provider with progress tracking and context API
+---
+
+The Preloader component provides a loading screen with animated progress tracking using GSAP. It exposes a context API for accessing loading state and controlling the preloader from anywhere in the component tree.
+
+## Props
+
+<ParamField path="children" type="ReactNode" required>
+  The child components to render after the preloader completes.
+</ParamField>
+
+<ParamField path="disabled" type="boolean" default="false">
+  When true, disables the preloader functionality (currently not implemented in the code).
+</ParamField>
+
+## TypeScript interface
+
+```tsx
+type PreloaderProps = {
+  children: ReactNode;
+  disabled?: boolean;
+};
+
+type PreloaderContextType = {
+  isLoading: boolean;
+  loadingPercent: number;
+  bypassLoading: () => void;
+};
+```
+
+## Usage
+
+### Wrap your application
+
+```tsx
+import Preloader from "@/components/preloader";
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        <Preloader>
+          {children}
+        </Preloader>
+      </body>
+    </html>
+  );
+}
+```
+
+### Access loading state with hook
+
+```tsx
+import { usePreloader } from "@/components/preloader";
+
+export default function MyComponent() {
+  const { isLoading, loadingPercent, bypassLoading } = usePreloader();
+
+  return (
+    <div>
+      {isLoading && <p>Loading: {Math.round(loadingPercent)}%</p>}
+      <button onClick={bypassLoading}>Skip Loading</button>
+    </div>
+  );
+}
+```
+
+### Sync with Header component
+
+```tsx
+import Preloader from "@/components/preloader";
+import Header from "@/components/header/header";
+
+export default function Layout({ children }) {
+  return (
+    <Preloader>
+      <Header loader={true} />
+      {children}
+    </Preloader>
+  );
+}
+```
+
+## Context API
+
+The Preloader provides a context with three values:
+
+### isLoading
+
+- **Type**: `boolean`
+- **Description**: True while preloader is active, false when loading completes
+
+### loadingPercent
+
+- **Type**: `number`
+- **Description**: Current loading progress from 0 to 100
+- **Updates**: Continuously updates during the 2.5-second loading animation
+
+### bypassLoading
+
+- **Type**: `() => void`
+- **Description**: Function to immediately skip the loading animation
+- **Behavior**: Sets progress to 100% and marks loading as complete
+
+## Hook
+
+### usePreloader
+
+Custom hook to access the preloader context:
+
+```tsx
+const { isLoading, loadingPercent, bypassLoading } = usePreloader();
+```
+
+**Throws error** if used outside of PreloaderProvider.
+
+## Animation details
+
+The loading animation uses GSAP with:
+
+- **Duration**: 2.5 seconds (defined as `LOADING_TIME`)
+- **Easing**: `slow(0.7, 0.7, false)` for smooth, natural progression
+- **Range**: Animates from 0 to 100
+- **Auto-complete**: Automatically sets `isLoading` to false when complete
+
+## Features
+
+- **Smooth progress**: GSAP-powered animation for natural loading progression
+- **Skip functionality**: Users can bypass loading with `bypassLoading()`
+- **Context-based**: Access loading state from any nested component
+- **AnimatePresence**: Smooth mount/unmount of loader component
+- **Progress tracking**: Real-time loading percentage updates
+
+## Component structure
+
+The Preloader renders:
+
+1. **Context provider**: Wraps children with preloader context
+2. **Loader component**: Conditionally rendered while `isLoading` is true
+3. **Children**: Your application content, always rendered
+
+## Cleanup behavior
+
+When `bypassLoading()` is called:
+
+1. GSAP tween is set to 99% progress
+2. Tween is killed to stop animation
+3. Loading percent set to 100
+4. `isLoading` set to false
+
+This ensures clean termination of the loading animation without jarring transitions.
+
+## Integration tips
+
+- Use `loader={true}` prop on Header to sync animations
+- Combine with route loading states for dynamic content
+- Access `loadingPercent` to show custom progress indicators
+- Call `bypassLoading()` for skip buttons or on user interaction

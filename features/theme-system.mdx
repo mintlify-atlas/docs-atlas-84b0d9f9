@@ -1,0 +1,389 @@
+---
+title: Theme system
+description: Dark and light mode support powered by next-themes
+---
+
+The portfolio implements a robust theme system with dark and light modes using `next-themes`, providing seamless theme switching with persistent user preferences.
+
+## Technology stack
+
+```json package.json
+{
+  "dependencies": {
+    "next-themes": "^0.3.0"
+  }
+}
+```
+
+## Theme provider setup
+
+The theme provider wraps the application and manages theme state. Located at `src/components/theme-provider.tsx`:
+
+```tsx theme-provider.tsx
+"use client"
+
+import * as React from "react"
+import { ThemeProvider as NextThemesProvider } from "next-themes"
+import { type ThemeProviderProps } from "next-themes/dist/types"
+
+export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
+  return <NextThemesProvider {...props}>{children}</NextThemesProvider>
+}
+```
+
+## Integration with Next.js
+
+Wrap your application with the `ThemeProvider` in your root layout:
+
+```tsx app/layout.tsx
+import { ThemeProvider } from "@/components/theme-provider";
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en" suppressHydrationMismatch>
+      <body>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+## Theme provider configuration
+
+### Key props
+
+| Prop | Value | Description |
+|------|-------|-------------|
+| `attribute` | `"class"` | Adds theme as a class to the `<html>` element |
+| `defaultTheme` | `"system"` | Defaults to user's system preference |
+| `enableSystem` | `true` | Enables system theme detection |
+| `disableTransitionOnChange` | `true` | Prevents flash during theme switch |
+
+### Suppress hydration warning
+
+The `suppressHydrationMismatch` attribute on the `<html>` tag prevents hydration warnings when the theme class is added:
+
+```tsx
+<html lang="en" suppressHydrationMismatch>
+```
+
+## Using the theme hook
+
+Access the current theme and theme controls using the `useTheme` hook:
+
+```tsx
+import { useTheme } from "next-themes";
+
+export default function ThemeToggle() {
+  const { theme, setTheme } = useTheme();
+
+  return (
+    <button
+      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      className="p-2 rounded-lg bg-gray-200 dark:bg-gray-800"
+    >
+      Current theme: {theme}
+    </button>
+  );
+}
+```
+
+## Theme-aware components
+
+### Conditional rendering
+
+```tsx
+import { useTheme } from "next-themes";
+
+export default function Logo() {
+  const { theme } = useTheme();
+
+  return (
+    <img
+      src={theme === "dark" ? "/logo-dark.svg" : "/logo-light.svg"}
+      alt="Logo"
+    />
+  );
+}
+```
+
+### Tailwind dark mode classes
+
+Tailwind automatically applies dark mode styles with the `dark:` prefix:
+
+```tsx
+<div className="bg-white dark:bg-black text-black dark:text-white">
+  This adapts to the theme
+</div>
+```
+
+## Theme integration with 3D scene
+
+The portfolio's 3D keyboard adapts to the theme by toggling visibility of themed objects:
+
+```tsx animated-background.tsx
+import { useTheme } from "next-themes";
+
+const AnimatedBackground = () => {
+  const { theme } = useTheme();
+  const [splineApp, setSplineApp] = useState<Application>();
+
+  useEffect(() => {
+    if (!splineApp) return;
+    
+    const textDesktopDark = splineApp.findObjectByName("text-desktop-dark");
+    const textDesktopLight = splineApp.findObjectByName("text-desktop");
+    
+    if (theme === "dark") {
+      textDesktopDark.visible = false;
+      textDesktopLight.visible = true;
+    } else {
+      textDesktopDark.visible = true;
+      textDesktopLight.visible = false;
+    }
+  }, [theme, splineApp]);
+
+  return <Spline scene="/assets/scene.spline" />;
+};
+```
+
+## Theme toggle component
+
+Create a complete theme toggle with icons:
+
+```tsx
+import { useTheme } from "next-themes";
+import { Moon, Sun } from "lucide-react";
+import { useEffect, useState } from "react";
+
+export default function ThemeToggle() {
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  // Avoid hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return null;
+  }
+
+  return (
+    <button
+      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
+      aria-label="Toggle theme"
+    >
+      {theme === "dark" ? (
+        <Sun className="w-5 h-5" />
+      ) : (
+        <Moon className="w-5 h-5" />
+      )}
+    </button>
+  );
+}
+```
+
+## Dropdown theme selector
+
+Provide multiple theme options:
+
+```tsx
+import { useTheme } from "next-themes";
+
+export default function ThemeSelector() {
+  const { theme, setTheme } = useTheme();
+
+  return (
+    <select
+      value={theme}
+      onChange={(e) => setTheme(e.target.value)}
+      className="p-2 rounded-lg bg-white dark:bg-gray-800"
+    >
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+      <option value="system">System</option>
+    </select>
+  );
+}
+```
+
+## Tailwind configuration
+
+Ensure Tailwind is configured for dark mode:
+
+```js tailwind.config.js
+module.exports = {
+  darkMode: 'class',
+  // ... rest of config
+}
+```
+
+## CSS variables approach
+
+Define theme colors using CSS variables for more control:
+
+```css globals.css
+:root {
+  --background: 255 255 255;
+  --foreground: 0 0 0;
+}
+
+.dark {
+  --background: 0 0 0;
+  --foreground: 255 255 255;
+}
+```
+
+Use in Tailwind:
+
+```tsx
+<div className="bg-[rgb(var(--background))] text-[rgb(var(--foreground))]">
+  Theme-aware content
+</div>
+```
+
+## Preventing flash of unstyled content
+
+The `next-themes` library automatically prevents FOUC by:
+
+1. Injecting a blocking script in the `<head>`
+2. Reading the theme from localStorage before render
+3. Setting the class immediately
+
+No additional configuration needed when using `disableTransitionOnChange`:
+
+```tsx
+<ThemeProvider disableTransitionOnChange>
+```
+
+## Handling system preference changes
+
+The theme automatically updates when the user changes their system preference:
+
+```tsx
+import { useTheme } from "next-themes";
+import { useEffect } from "react";
+
+export default function SystemThemeListener() {
+  const { theme, systemTheme } = useTheme();
+
+  useEffect(() => {
+    console.log("Current theme:", theme);
+    console.log("System theme:", systemTheme);
+  }, [theme, systemTheme]);
+
+  return null;
+}
+```
+
+## Best practices
+
+### Avoid hydration mismatches
+
+Always check if the component is mounted before accessing theme:
+
+```tsx
+const [mounted, setMounted] = useState(false);
+
+useEffect(() => {
+  setMounted(true);
+}, []);
+
+if (!mounted) {
+  return null; // or a placeholder
+}
+```
+
+### Use semantic color names
+
+```css
+:root {
+  --color-background: white;
+  --color-text: black;
+  --color-primary: blue;
+}
+
+.dark {
+  --color-background: black;
+  --color-text: white;
+  --color-primary: lightblue;
+}
+```
+
+### Persist theme preference
+
+`next-themes` automatically persists the theme choice to localStorage with the key `theme`.
+
+## Advanced usage
+
+### Multiple themes
+
+```tsx
+<ThemeProvider
+  attribute="class"
+  defaultTheme="system"
+  enableSystem
+  themes={['light', 'dark', 'blue', 'red']}
+>
+  {children}
+</ThemeProvider>
+```
+
+### Force theme on specific pages
+
+```tsx
+import { useTheme } from "next-themes";
+import { useEffect } from "react";
+
+export default function DarkModePage() {
+  const { setTheme } = useTheme();
+
+  useEffect(() => {
+    setTheme("dark");
+  }, []);
+
+  return <div>This page is always dark</div>;
+}
+```
+
+### Theme-specific animations
+
+```tsx
+import { useTheme } from "next-themes";
+import { motion } from "framer-motion";
+
+export default function AnimatedBackground() {
+  const { theme } = useTheme();
+
+  return (
+    <motion.div
+      animate={{
+        backgroundColor: theme === "dark" ? "#000" : "#fff",
+      }}
+      transition={{ duration: 0.3 }}
+    />
+  );
+}
+```
+
+<Note>
+The `next-themes` library handles SSR automatically, preventing hydration mismatches by injecting a blocking script.
+</Note>
+
+<Tip>
+Use the `useTheme` hook sparingly in components that don't need theme information to improve performance.
+</Tip>

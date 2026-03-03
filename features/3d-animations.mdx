@@ -1,0 +1,289 @@
+---
+title: 3D animations
+description: Interactive 3D keyboard powered by Spline that transforms across different sections
+---
+
+The portfolio features a stunning 3D keyboard that dynamically transforms as users scroll through different sections. Built with Spline and GSAP, it creates an immersive experience that responds to user interactions.
+
+## Technology stack
+
+The 3D animation system uses:
+
+- **Spline** - 3D design and runtime rendering
+- **GSAP with ScrollTrigger** - Scroll-based animations
+- **Framer Motion** - Additional animation effects
+
+```json package.json
+{
+  "dependencies": {
+    "@splinetool/react-spline": "^4.0.0",
+    "@splinetool/runtime": "^1.9.3",
+    "gsap": "^3.12.5",
+    "framer-motion": "^11.3.17"
+  }
+}
+```
+
+## Component implementation
+
+The main 3D animation component is located at `src/components/animated-background.tsx`:
+
+```tsx animated-background.tsx
+import React, { Suspense, useEffect, useRef, useState } from "react";
+import { Application, SPEObject, SplineEvent } from "@splinetool/runtime";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+const Spline = React.lazy(() => import("@splinetool/react-spline"));
+
+gsap.registerPlugin(ScrollTrigger);
+
+const AnimatedBackground = () => {
+  const splineContainer = useRef<HTMLDivElement>(null);
+  const [splineApp, setSplineApp] = useState<Application>();
+
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <Spline
+        ref={splineContainer}
+        onLoad={(app: Application) => {
+          setSplineApp(app);
+        }}
+        scene="/assets/skills-keyboard.spline"
+      />
+    </Suspense>
+  );
+};
+```
+
+## Section states
+
+The keyboard transforms to different states based on the active section. Each state defines the scale, position, and rotation:
+
+```typescript animated-background.tsx
+const STATES = {
+  hero: {
+    desktop: {
+      scale: { x: 0.25, y: 0.25, z: 0.25 },
+      position: { x: 400, y: -200, z: 0 },
+      rotation: { x: 0, y: 0, z: 0 },
+    },
+    mobile: {
+      scale: { x: 0.15, y: 0.15, z: 0.15 },
+      position: { x: 0, y: -200, z: 0 },
+      rotation: { x: 0, y: 0, z: 0 },
+    },
+  },
+  skills: {
+    desktop: {
+      scale: { x: 0.4, y: 0.4, z: 0.4 },
+      position: { x: 0, y: -40, z: 0 },
+      rotation: { x: 0, y: Math.PI / 12, z: 0 },
+    },
+  },
+  projects: {
+    desktop: {
+      scale: { x: 0.3, y: 0.3, z: 0.3 },
+      position: { x: 0, y: -40, z: 0 },
+      rotation: { x: Math.PI, y: Math.PI / 3, z: Math.PI },
+    },
+  },
+};
+```
+
+## Scroll-triggered animations
+
+The keyboard automatically animates as users scroll through sections using GSAP ScrollTrigger:
+
+```typescript animated-background.tsx
+const handleGsapAnimations = () => {
+  const kbd = splineApp.findObjectByName("keyboard");
+  if (!kbd || !splineContainer.current) return;
+
+  // Skills section trigger
+  gsap.timeline({
+    scrollTrigger: {
+      trigger: "#skills",
+      start: "top 50%",
+      end: "bottom bottom",
+      scrub: true,
+      onEnter: () => {
+        setActiveSection("skills");
+        gsap.to(kbd.scale, {
+          ...keyboardStates("skills").scale,
+          duration: 1,
+        });
+        gsap.to(kbd.position, {
+          ...keyboardStates("skills").position,
+          duration: 1,
+        });
+        gsap.to(kbd.rotation, {
+          ...keyboardStates("skills").rotation,
+          duration: 1,
+        });
+      },
+    },
+  });
+};
+```
+
+## Interactive keycaps
+
+Individual keycaps respond to hover and click events, displaying skill information:
+
+```typescript animated-background.tsx
+const handleMouseHover = (e: SplineEvent) => {
+  if (!splineApp || selectedSkill?.name === e.target.name) return;
+
+  if (e.target.name === "body" || e.target.name === "platform") {
+    setSelectedSkill(null);
+    splineApp.setVariable("heading", "");
+    splineApp.setVariable("desc", "");
+  } else {
+    const skill = SKILLS[e.target.name as SkillNames];
+    setSelectedSkill(skill);
+  }
+};
+
+// Update text when skill is selected
+useEffect(() => {
+  if (!selectedSkill || !splineApp) return;
+  splineApp.setVariable("heading", selectedSkill.label);
+  splineApp.setVariable("desc", selectedSkill.shortDescription);
+}, [selectedSkill]);
+```
+
+## Keycap reveal animation
+
+Keycaps animate in with an elastic bounce effect on initial load:
+
+```typescript animated-background.tsx
+const revealKeyCaps = async () => {
+  const kbd = splineApp.findObjectByName("keyboard");
+  if (!kbd) return;
+
+  // Scale up keyboard with elastic effect
+  gsap.fromTo(
+    kbd?.scale,
+    { x: 0.01, y: 0.01, z: 0.01 },
+    {
+      x: keyboardStates(activeSection).scale.x,
+      y: keyboardStates(activeSection).scale.y,
+      z: keyboardStates(activeSection).scale.z,
+      duration: 1.5,
+      ease: "elastic.out(1, 0.6)",
+    }
+  );
+
+  // Animate individual keycaps
+  const allObjects = splineApp.getAllObjects();
+  const keycaps = allObjects.filter((obj) => obj.name === "keycap");
+  
+  keycaps.forEach(async (keycap, idx) => {
+    keycap.visible = false;
+    await sleep(idx * 70);
+    keycap.visible = true;
+    gsap.fromTo(
+      keycap.position,
+      { y: 200 },
+      { y: 50, duration: 0.5, delay: 0.1, ease: "bounce.out" }
+    );
+  });
+};
+```
+
+## Special animations
+
+The keyboard includes special animations for different sections:
+
+### Bongo cat animation (Projects section)
+
+```typescript animated-background.tsx
+const getBongoAnimation = () => {
+  const framesParent = splineApp?.findObjectByName("bongo-cat");
+  const frame1 = splineApp?.findObjectByName("frame-1");
+  const frame2 = splineApp?.findObjectByName("frame-2");
+
+  let interval: NodeJS.Timeout;
+  const start = () => {
+    let i = 0;
+    framesParent.visible = true;
+    interval = setInterval(() => {
+      if (i % 2) {
+        frame1.visible = false;
+        frame2.visible = true;
+      } else {
+        frame1.visible = true;
+        frame2.visible = false;
+      }
+      i++;
+    }, 100);
+  };
+  const stop = () => {
+    clearInterval(interval);
+    framesParent.visible = false;
+  };
+  return { start, stop };
+};
+```
+
+### Keycap floating animation (Contact section)
+
+```typescript animated-background.tsx
+const getKeycapsAnimation = () => {
+  let tweens: gsap.core.Tween[] = [];
+  
+  const start = () => {
+    Object.values(SKILLS)
+      .sort(() => Math.random() - 0.5)
+      .forEach((skill, idx) => {
+        const keycap = splineApp.findObjectByName(skill.name);
+        if (!keycap) return;
+        const t = gsap.to(keycap?.position, {
+          y: Math.random() * 200 + 200,
+          duration: Math.random() * 2 + 2,
+          delay: idx * 0.6,
+          repeat: -1,
+          yoyo: true,
+          yoyoEase: "none",
+          ease: "elastic.out(1,0.3)",
+        });
+        tweens.push(t);
+      });
+  };
+  
+  return { start, stop };
+};
+```
+
+## Theme support
+
+The 3D scene adapts to light and dark themes by toggling visibility of themed text objects:
+
+```typescript animated-background.tsx
+useEffect(() => {
+  if (!splineApp) return;
+  const textDesktopDark = splineApp.findObjectByName("text-desktop-dark");
+  const textDesktopLight = splineApp.findObjectByName("text-desktop");
+  const textMobileDark = splineApp.findObjectByName("text-mobile-dark");
+  const textMobileLight = splineApp.findObjectByName("text-mobile");
+
+  if (theme === "dark" && !isMobile) {
+    textDesktopDark.visible = false;
+    textDesktopLight.visible = true;
+  } else if (theme === "light" && !isMobile) {
+    textDesktopDark.visible = true;
+    textDesktopLight.visible = false;
+  }
+}, [theme, splineApp, isMobile, activeSection]);
+```
+
+<Note>
+The Spline scene file (`skills-keyboard.spline`) must be placed in the `/public/assets/` directory for proper loading.
+</Note>
+
+## Performance considerations
+
+- The Spline component is lazy-loaded to improve initial page load times
+- GSAP tweens are properly cleaned up to prevent memory leaks
+- Animations use hardware acceleration for smooth performance
+- Mobile devices receive optimized, simpler animations

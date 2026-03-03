@@ -1,0 +1,146 @@
+---
+title: Particles
+description: Interactive particle animation component with mouse tracking
+---
+
+The Particles component creates an animated background effect with interactive particles that respond to mouse movement. Particles are drawn on a canvas element and follow the cursor with configurable magnetism and physics.
+
+## Props
+
+<ParamField path="className" type="string" default='""'>
+  Additional CSS classes to apply to the container div.
+</ParamField>
+
+<ParamField path="quantity" type="number" default="30">
+  Number of particles to render on the canvas. More particles create a denser effect but may impact performance.
+</ParamField>
+
+<ParamField path="staticity" type="number" default="50">
+  Controls how static or responsive particles are to mouse movement. Higher values make particles more static, lower values make them more responsive.
+</ParamField>
+
+<ParamField path="ease" type="number" default="50">
+  Easing factor for particle movement. Higher values create smoother, slower transitions as particles follow the mouse.
+</ParamField>
+
+<ParamField path="refresh" type="boolean" default="false">
+  When toggled, reinitializes the canvas and regenerates all particles.
+</ParamField>
+
+## TypeScript interface
+
+```tsx
+interface ParticlesProps {
+  className?: string;
+  quantity?: number;
+  staticity?: number;
+  ease?: number;
+  refresh?: boolean;
+}
+```
+
+## Usage
+
+### Basic usage
+
+```tsx
+import Particles from "@/components/Particles";
+
+export default function Page() {
+  return (
+    <div className="relative">
+      <Particles />
+      {/* Your content */}
+    </div>
+  );
+}
+```
+
+### Custom configuration
+
+```tsx
+import Particles from "@/components/Particles";
+
+export default function Page() {
+  return (
+    <div className="relative h-screen">
+      <Particles
+        className="absolute inset-0"
+        quantity={50}
+        staticity={30}
+        ease={70}
+      />
+      {/* Your content */}
+    </div>
+  );
+}
+```
+
+### With refresh trigger
+
+```tsx
+import Particles from "@/components/Particles";
+import { useState } from "react";
+
+export default function Page() {
+  const [refresh, setRefresh] = useState(false);
+
+  return (
+    <div className="relative h-screen">
+      <Particles
+        className="absolute inset-0"
+        quantity={40}
+        refresh={refresh}
+      />
+      <button onClick={() => setRefresh(!refresh)}>
+        Refresh Particles
+      </button>
+    </div>
+  );
+}
+```
+
+## Features
+
+- **Mouse interaction**: Particles follow cursor with magnetic effect
+- **Edge fade**: Particles fade out near canvas edges for smooth visual transitions
+- **Auto-respawn**: Particles regenerate when they leave the canvas bounds
+- **Responsive**: Automatically resizes with window changes
+- **Performance optimized**: Uses requestAnimationFrame for smooth 60fps animation
+- **HiDPI support**: Accounts for device pixel ratio for crisp rendering
+
+## Particle physics
+
+Each particle has:
+
+- Random initial position
+- Random size between 0.1 and 2.1 pixels
+- Random alpha transparency (0.1 to 0.7)
+- Random drift velocity (dx, dy)
+- Individual magnetism value (0.1 to 4.1)
+
+## Animation behavior
+
+Particles are influenced by:
+
+1. **Mouse position**: Attracts particles based on magnetism and staticity values
+2. **Drift motion**: Each particle has slight random movement
+3. **Edge proximity**: Alpha fades within 20 pixels of canvas edge
+4. **Easing**: Smooth interpolation based on ease parameter
+
+## Performance considerations
+
+- Higher `quantity` values increase particle count and may reduce frame rate
+- Lower `ease` values create snappier movement but may appear jittery
+- Component automatically cleans up event listeners on unmount
+- Canvas is cleared and redrawn on each animation frame
+
+## Styling notes
+
+The component includes a gradient background class:
+
+```tsx
+className="dark:bg-gradient-to-tl from-black via-zinc-600/20 to-black"
+```
+
+This provides a subtle background effect in dark mode that complements the particle animation.
